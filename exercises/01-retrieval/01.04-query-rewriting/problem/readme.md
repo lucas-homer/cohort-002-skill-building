@@ -8,10 +8,10 @@ A query rewriter takes the user's query (in our case, a conversation history) an
 ┌───────────────────────┐      ┌─────────────────┐      ┌───────────────┐
 │                       │      │                 │      │               │
 │  Conversation History │──────►  Query Rewriter │──────►  Refined Query│
-│  "Tell me about TS    │      │     (LLM)       │      │ "TypeScript   │
-│   generics. How do    │      │                 │      │  generics     │
-│   they work in        │      │                 │      │  syntax usage │
-│   interfaces?"        │      │                 │      │  interfaces"  │
+│  "What did David say  │      │     (LLM)       │      │ "mortgage     │
+│   about the mortgage? │      │                 │      │  application  │
+│   I need to find that │      │                 │      │  David status"│
+│   email..."           │      │                 │      │               │
 │                       │      │                 │      │               │
 └───────────────────────┘      └─────────────────┘      └───────┬───────┘
                                                                 │
@@ -19,7 +19,7 @@ A query rewriter takes the user's query (in our case, a conversation history) an
                                                                 ▼
 ┌────────────────────────┐     ┌────────────────────┐     ┌────────────────┐
 │                        │     │                    │     │                │
-│  Retrieved Documents   │◄────┤  Vector Database/  │◄────┤  Embedding     │
+│  Retrieved Emails      │◄────┤  Vector Database/  │◄────┤  Embedding     │
 │  from Corpus           │     │  Search System     │     │  Model         │
 │                        │     │                    │     │                │
 └────────────────────────┘     └────────────────────┘     └────────────────┘
@@ -31,9 +31,9 @@ The problem in our current setup is that we're embedding the entire conversation
 
 The reason that's an issue is that as the conversation gets longer, the embedding gets bigger and bigger, and the stuff towards the end (the most relevant part to the actual user's question) will start to have less impact on what gets returned from the corpus.
 
-This will be especially dramatic if there's a sudden turn in conversation. Let's say we have a conversation history that's 9 messages long, all about TypeScript generics. Then the user asks a single question about comparisons to JSDoc. The embedding we create will be 9/10 about generics, and 1/10 about JSDoc.
+This will be especially dramatic if there's a sudden turn in conversation. Let's say we have a conversation history that's 9 messages long, all about mortgage applications. Then the user asks a single question about booking confirmations. The embedding we create will be 9/10 about mortgages, and 1/10 about bookings.
 
-We need to take that massive conversation history, pass it to an LLM, and then get it to make a refined search query that we can use to fetch the most relevant documents. That's what query rewriters do - they rewrite big queries into smaller, more focused ones.
+We need to take that massive conversation history, pass it to an LLM, and then get it to make a refined search query that we can use to fetch the most relevant emails. That's what query rewriters do - they rewrite big queries into smaller, more focused ones.
 
 ## Our BM25 Keyword Search
 
@@ -42,14 +42,14 @@ We are already doing some of this with our BM25. BM25 requires a list of keyword
 ```ts
 const keywords = await generateObject({
   model: google('gemini-2.0-flash-001'),
-  system: `You are a helpful TypeScript developer, able to search the TypeScript docs for information.
-    Your job is to generate a list of keywords which will be used to search the TypeScript docs.
+  system: `You are a helpful email assistant, able to search emails for information.
+    Your job is to generate a list of keywords which will be used to search the emails.
   `,
   schema: z.object({
     keywords: z
       .array(z.string())
       .describe(
-        'A list of keywords to search the TypeScript docs with. Use these for exact terminology.',
+        'A list of keywords to search the emails with. Use these for exact terminology.',
       ),
   }),
   prompt: `
@@ -85,7 +85,7 @@ Good luck, and I will see you in the solution.
 
 - [ ] Replace the `TODO` to use the generated search query
 
-- [ ] Test your implementation by running the dev server and asking questions about TypeScript
+- [ ] Test your implementation by running the dev server and asking questions about emails
 
 - [ ] Check the console logs to see the generated keywords and search query
 
