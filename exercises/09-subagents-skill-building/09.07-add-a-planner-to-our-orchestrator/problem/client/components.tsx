@@ -1,13 +1,30 @@
-import React, { type ReactNode, useState } from 'react';
-import type { MyMessage } from '../api/chat.ts';
+import React, { useState } from 'react';
 import ReactMarkdown from 'react-markdown';
+import type { MyMessage } from '../api/chat.ts';
+
+function cn(...classes: (string | boolean | undefined)[]) {
+  return classes.filter(Boolean).join(' ');
+}
 
 export const Wrapper = (props: {
-  children: React.ReactNode;
+  messages: React.ReactNode;
+  input: React.ReactNode;
 }) => {
   return (
-    <div className="flex flex-col w-full max-w-md py-24 mx-auto stretch">
-      {props.children}
+    <div className="flex flex-col h-screen w-full overflow-hidden">
+      <div className="flex-shrink-0 border-b border-border bg-background/80 backdrop-blur-sm">
+        <div className="max-w-3xl mx-auto px-4 py-2">
+          <h1 className="text-xs font-medium text-muted-foreground">
+            Skill Building
+          </h1>
+        </div>
+      </div>
+      <div className="flex-1 overflow-y-auto px-4 py-8 pt-6 scrollbar-thin scrollbar-track-background scrollbar-thumb-muted hover:scrollbar-thumb-muted-foreground">
+        <div className="max-w-3xl mx-auto space-y-6">
+          {props.messages}
+        </div>
+      </div>
+      {props.input}
     </div>
   );
 };
@@ -18,31 +35,43 @@ export const Message = ({
 }: {
   role: string;
   parts: MyMessage['parts'];
-}) => (
-  <div className="my-4 space-y-2">
-    <div className="text-sm text-gray-300">
-      {role === 'user' ? 'User: ' : 'AI: '}
+}) => {
+  const isUser = role === 'user';
+
+  return (
+    <div className={cn('flex w-full', isUser && 'justify-end')}>
+      <div className="flex flex-col gap-2 max-w-[60ch] w-full">
+        <div
+          className={cn(
+            'transition-colors',
+            isUser
+              ? 'rounded-lg bg-accent text-accent-foreground border border-border shadow-sm px-4 py-3'
+              : 'text-foreground px-4',
+          )}
+        >
+          {parts.map((part) => {
+            if (part.type === 'text') {
+              return (
+                <div className="prose prose-sm prose-invert max-w-none">
+                  <ReactMarkdown>{part.text}</ReactMarkdown>
+                </div>
+              );
+            }
+
+            // TODO: Handle the reasoning part. You can handle it
+            // in the same way as the text above - though it should
+            // perhaps look a little greyed out.
+            TODO;
+
+            if (part.type === 'data-task') {
+              return <TaskItem key={part.id} task={part.data} />;
+            }
+          })}
+        </div>
+      </div>
     </div>
-    {parts.map((part) => {
-      if (part.type === 'text') {
-        return (
-          <div className="text-gray-100 prose prose-invert">
-            <ReactMarkdown>{part.text}</ReactMarkdown>
-          </div>
-        );
-      }
-
-      // TODO: Handle the reasoning part. You can handle it
-      // in the same way as the text above - though it should
-      // perhaps look a little greyed out.
-      TODO;
-
-      if (part.type === 'data-task') {
-        return <TaskItem key={part.id} task={part.data} />;
-      }
-    })}
-  </div>
-);
+  );
+};
 
 const TaskItem = ({
   task,
@@ -58,7 +87,7 @@ const TaskItem = ({
   const isCompleted = !!task.output;
 
   return (
-    <div className="bg-gray-800 border border-gray-700 rounded-lg p-3 mb-2">
+    <div className="bg-card border border-border rounded-lg p-3 mb-2">
       <div className="flex items-start space-x-2">
         <div className="flex-shrink-0 mt-0.5">
           {isCompleted ? (
@@ -76,7 +105,7 @@ const TaskItem = ({
               </svg>
             </div>
           ) : (
-            <div className="w-4 h-4 border-2 border-gray-500 rounded-full"></div>
+            <div className="w-4 h-4 border-2 border-muted rounded-full"></div>
           )}
         </div>
 
@@ -84,12 +113,20 @@ const TaskItem = ({
           <div className="flex items-center justify-between">
             <div className="flex-1">
               <h3
-                className={`text-xs font-medium ${isCompleted ? 'text-green-400' : 'text-gray-300'}`}
+                className={cn(
+                  'text-xs font-medium',
+                  isCompleted ? 'text-green-400' : 'text-muted-foreground',
+                )}
               >
                 {task.subagent}
               </h3>
               <p
-                className={`text-xs mt-0.5 ${isCompleted ? 'text-gray-400 line-through' : 'text-gray-200'}`}
+                className={cn(
+                  'text-xs mt-0.5',
+                  isCompleted
+                    ? 'text-muted-foreground line-through'
+                    : 'text-foreground',
+                )}
               >
                 {task.task}
               </p>
@@ -98,7 +135,7 @@ const TaskItem = ({
             {isCompleted && (
               <button
                 onClick={() => setIsExpanded(!isExpanded)}
-                className="ml-2 text-xs text-blue-400 hover:text-blue-300 transition-colors"
+                className="ml-2 text-xs text-accent-foreground hover:text-accent transition-colors"
               >
                 {isExpanded ? 'Hide details' : 'See details'}
               </button>
@@ -106,11 +143,11 @@ const TaskItem = ({
           </div>
 
           {isCompleted && isExpanded && (
-            <div className="mt-2 p-2 bg-gray-700 rounded border-l-4 border-green-500">
+            <div className="mt-2 p-2 bg-muted rounded border-l-4 border-green-500">
               <h4 className="text-xs font-medium text-green-400 mb-1">
                 Output:
               </h4>
-              <div className="text-xs text-gray-300 prose prose-invert prose-xs max-w-none">
+              <div className="text-xs text-muted-foreground prose prose-invert prose-xs max-w-none">
                 <ReactMarkdown>{task.output}</ReactMarkdown>
               </div>
             </div>
@@ -128,24 +165,75 @@ export const ChatInput = ({
   disabled,
 }: {
   input: string;
-  onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  onChange: (e: React.ChangeEvent<HTMLTextAreaElement>) => void;
   onSubmit: (e: React.FormEvent) => void;
   disabled?: boolean;
 }) => (
-  <form onSubmit={onSubmit}>
-    <input
-      className={`fixed bottom-0 w-full max-w-md p-2 mb-8 border-2 border-zinc-700 rounded shadow-xl bg-gray-800 ${
-        disabled ? 'opacity-50 cursor-not-allowed' : ''
-      }`}
-      value={input}
-      placeholder={
-        disabled
-          ? 'Please handle tool calls first...'
-          : 'Say something...'
-      }
-      onChange={onChange}
-      disabled={disabled}
-      autoFocus
-    />
-  </form>
+  <div className="flex-shrink-0 w-full border-t border-border bg-background/80 backdrop-blur-sm">
+    <div className="max-w-3xl mx-auto p-4">
+      <form onSubmit={onSubmit} className="relative">
+        <AutoExpandingTextarea
+          value={input}
+          placeholder={
+            disabled
+              ? 'Please handle tool calls first...'
+              : 'Ask a question...'
+          }
+          onChange={onChange}
+          disabled={disabled}
+          autoFocus
+        />
+      </form>
+    </div>
+  </div>
 );
+
+const AutoExpandingTextarea = ({
+  value,
+  onChange,
+  placeholder,
+  disabled,
+  autoFocus,
+}: {
+  value: string;
+  onChange: (e: React.ChangeEvent<HTMLTextAreaElement>) => void;
+  placeholder?: string;
+  disabled?: boolean;
+  autoFocus?: boolean;
+}) => {
+  const textareaRef = React.useRef<HTMLTextAreaElement>(null);
+
+  React.useEffect(() => {
+    const textarea = textareaRef.current;
+    if (!textarea) return;
+
+    textarea.style.height = 'auto';
+    textarea.style.height = `${textarea.scrollHeight}px`;
+  }, [value]);
+
+  return (
+    <textarea
+      ref={textareaRef}
+      rows={1}
+      className={cn(
+        'w-full rounded-lg border border-input bg-card px-4 py-3 text-sm shadow-sm transition-all resize-none max-h-[6lh]',
+        'overflow-y-auto scrollbar-thin scrollbar-track-transparent scrollbar-thumb-accent',
+        'placeholder:text-muted-foreground',
+        'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:border-transparent',
+        'disabled:cursor-not-allowed disabled:opacity-50',
+        !disabled && 'hover:border-ring/50',
+      )}
+      value={value}
+      placeholder={placeholder}
+      onChange={onChange}
+      onKeyDown={(e) => {
+        if (e.key === 'Enter' && !e.shiftKey) {
+          e.preventDefault();
+          e.currentTarget.form?.requestSubmit();
+        }
+      }}
+      disabled={disabled}
+      autoFocus={autoFocus}
+    />
+  );
+};

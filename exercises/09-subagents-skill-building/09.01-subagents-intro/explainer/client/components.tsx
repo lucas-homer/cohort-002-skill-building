@@ -3,12 +3,29 @@ import ReactMarkdown from 'react-markdown';
 import type { MyMessage } from '../api/chat.ts';
 import type { Subagent } from './root.tsx';
 
+function cn(...classes: (string | boolean | undefined)[]) {
+  return classes.filter(Boolean).join(' ');
+}
+
 export const Wrapper = (props: {
-  children: React.ReactNode;
+  messages: React.ReactNode;
+  input: React.ReactNode;
 }) => {
   return (
-    <div className="flex flex-col w-full max-w-md py-24 mx-auto stretch">
-      {props.children}
+    <div className="flex flex-col h-screen w-full overflow-hidden">
+      <div className="flex-shrink-0 border-b border-border bg-background/80 backdrop-blur-sm">
+        <div className="max-w-3xl mx-auto px-4 py-2">
+          <h1 className="text-xs font-medium text-muted-foreground">
+            Skill Building
+          </h1>
+        </div>
+      </div>
+      <div className="flex-1 overflow-y-auto px-4 py-8 pt-6 scrollbar-thin scrollbar-track-background scrollbar-thumb-muted hover:scrollbar-thumb-muted-foreground">
+        <div className="max-w-3xl mx-auto space-y-6">
+          {props.messages}
+        </div>
+      </div>
+      {props.input}
     </div>
   );
 };
@@ -19,22 +36,35 @@ export const Message = ({
 }: {
   role: string;
   parts: MyMessage['parts'];
-}) => (
-  <div className="my-4 space-y-2">
-    <div className="text-sm text-gray-300">
-      {role === 'user' ? 'User: ' : 'AI: '}
+}) => {
+  const isUser = role === 'user';
+
+  return (
+    <div className={cn('flex w-full', isUser && 'justify-end')}>
+      <div className="flex flex-col gap-2 max-w-[60ch] w-full">
+        <div
+          className={cn(
+            'transition-colors',
+            isUser
+              ? 'rounded-lg bg-accent text-accent-foreground border border-border shadow-sm px-4 py-3'
+              : 'text-foreground px-4',
+          )}
+        >
+          {parts.map((part) => {
+            if (part.type === 'text') {
+              return (
+                <div className="prose prose-sm prose-invert max-w-none">
+                  <ReactMarkdown>{part.text}</ReactMarkdown>
+                </div>
+              );
+            }
+            return '';
+          })}
+        </div>
+      </div>
     </div>
-    {parts.map((part) => {
-      if (part.type === 'text') {
-        return (
-          <div className="text-gray-100 prose prose-invert">
-            <ReactMarkdown>{part.text}</ReactMarkdown>
-          </div>
-        );
-      }
-    })}
-  </div>
-);
+  );
+};
 
 export const ChatInput = ({
   input,
@@ -45,73 +75,126 @@ export const ChatInput = ({
   setSubagent,
 }: {
   input: string;
-  onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  onChange: (e: React.ChangeEvent<HTMLTextAreaElement>) => void;
   onSubmit: (e: React.FormEvent) => void;
   disabled?: boolean;
   subagent: Subagent;
   setSubagent: (subagent: Subagent) => void;
 }) => (
-  <div className="fixed bottom-0 w-full max-w-md mb-8 shadow-xl">
-    <div className="flex items-center justify-between mb-3">
-      <div className="flex items-center justify-end space-x-2 w-full">
-        <h2 className="text-xs text-gray-300">Mode:</h2>
-        <button
-          onClick={() => setSubagent('todos-agent')}
-          className={`px-3 py-1 rounded-md text-xs flex-shrink-0 ${
-            subagent === 'todos-agent'
-              ? 'bg-blue-500 text-white'
-              : 'bg-gray-700 text-gray-300'
-          }`}
-        >
-          Todos
-        </button>
-        <button
-          onClick={() => setSubagent('student-notes-manager')}
-          className={`px-3 py-1 rounded-md text-xs flex-shrink-0 ${
-            subagent === 'student-notes-manager'
-              ? 'bg-blue-500 text-white'
-              : 'bg-gray-700 text-gray-300'
-          }`}
-        >
-          Student Notes
-        </button>
-        <button
-          onClick={() => setSubagent('song-finder-agent')}
-          className={`px-3 py-1 rounded-md text-xs flex-shrink-0 ${
-            subagent === 'song-finder-agent'
-              ? 'bg-blue-500 text-white'
-              : 'bg-gray-700 text-gray-300'
-          }`}
-        >
-          Song Finder
-        </button>
-        <button
-          onClick={() => setSubagent('scheduler-agent')}
-          className={`px-3 py-1 rounded-md text-xs flex-shrink-0 ${
-            subagent === 'scheduler-agent'
-              ? 'bg-blue-500 text-white'
-              : 'bg-gray-700 text-gray-300'
-          }`}
-        >
-          Scheduler
-        </button>
+  <div className="flex-shrink-0 w-full border-t border-border bg-background/80 backdrop-blur-sm">
+    <div className="max-w-3xl mx-auto p-4">
+      <div className="flex items-center justify-between mb-3">
+        <div className="flex items-center justify-end space-x-2 w-full">
+          <h2 className="text-xs text-muted-foreground">Mode:</h2>
+          <button
+            onClick={() => setSubagent('todos-agent')}
+            className={cn(
+              'px-3 py-1 rounded-md text-xs flex-shrink-0 transition-colors',
+              subagent === 'todos-agent'
+                ? 'bg-accent text-accent-foreground border border-border'
+                : 'bg-muted text-muted-foreground hover:bg-muted/80',
+            )}
+          >
+            Todos
+          </button>
+          <button
+            onClick={() => setSubagent('student-notes-manager')}
+            className={cn(
+              'px-3 py-1 rounded-md text-xs flex-shrink-0 transition-colors',
+              subagent === 'student-notes-manager'
+                ? 'bg-accent text-accent-foreground border border-border'
+                : 'bg-muted text-muted-foreground hover:bg-muted/80',
+            )}
+          >
+            Student Notes
+          </button>
+          <button
+            onClick={() => setSubagent('song-finder-agent')}
+            className={cn(
+              'px-3 py-1 rounded-md text-xs flex-shrink-0 transition-colors',
+              subagent === 'song-finder-agent'
+                ? 'bg-accent text-accent-foreground border border-border'
+                : 'bg-muted text-muted-foreground hover:bg-muted/80',
+            )}
+          >
+            Song Finder
+          </button>
+          <button
+            onClick={() => setSubagent('scheduler-agent')}
+            className={cn(
+              'px-3 py-1 rounded-md text-xs flex-shrink-0 transition-colors',
+              subagent === 'scheduler-agent'
+                ? 'bg-accent text-accent-foreground border border-border'
+                : 'bg-muted text-muted-foreground hover:bg-muted/80',
+            )}
+          >
+            Scheduler
+          </button>
+        </div>
       </div>
+      <form onSubmit={onSubmit} className="relative">
+        <AutoExpandingTextarea
+          value={input}
+          placeholder={
+            disabled
+              ? 'Please handle tool calls first...'
+              : 'Ask a question...'
+          }
+          onChange={onChange}
+          disabled={disabled}
+          autoFocus
+        />
+      </form>
     </div>
-    <form onSubmit={onSubmit}>
-      <input
-        className={`w-full border-2 bg-gray-800 border-zinc-700 rounded p-2 text-sm${
-          disabled ? 'opacity-50 cursor-not-allowed' : ''
-        }`}
-        value={input}
-        placeholder={
-          disabled
-            ? 'Please handle tool calls first...'
-            : 'Say something...'
-        }
-        onChange={onChange}
-        disabled={disabled}
-        autoFocus
-      />
-    </form>
   </div>
 );
+
+const AutoExpandingTextarea = ({
+  value,
+  onChange,
+  placeholder,
+  disabled,
+  autoFocus,
+}: {
+  value: string;
+  onChange: (e: React.ChangeEvent<HTMLTextAreaElement>) => void;
+  placeholder?: string;
+  disabled?: boolean;
+  autoFocus?: boolean;
+}) => {
+  const textareaRef = React.useRef<HTMLTextAreaElement>(null);
+
+  React.useEffect(() => {
+    const textarea = textareaRef.current;
+    if (!textarea) return;
+
+    textarea.style.height = 'auto';
+    textarea.style.height = `${textarea.scrollHeight}px`;
+  }, [value]);
+
+  return (
+    <textarea
+      ref={textareaRef}
+      rows={1}
+      className={cn(
+        'w-full rounded-lg border border-input bg-card px-4 py-3 text-sm shadow-sm transition-all resize-none max-h-[6lh]',
+        'overflow-y-auto scrollbar-thin scrollbar-track-transparent scrollbar-thumb-accent',
+        'placeholder:text-muted-foreground',
+        'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:border-transparent',
+        'disabled:cursor-not-allowed disabled:opacity-50',
+        !disabled && 'hover:border-ring/50',
+      )}
+      value={value}
+      placeholder={placeholder}
+      onChange={onChange}
+      onKeyDown={(e) => {
+        if (e.key === 'Enter' && !e.shiftKey) {
+          e.preventDefault();
+          e.currentTarget.form?.requestSubmit();
+        }
+      }}
+      disabled={disabled}
+      autoFocus={autoFocus}
+    />
+  );
+};
