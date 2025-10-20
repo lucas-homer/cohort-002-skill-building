@@ -2,6 +2,12 @@
 
 ## Section 01: Retrieval Skill Building
 
+**Learning Goals:**
+- Understand RAG fundamentals and connecting LLMs to private data
+- Master keyword search (BM25) and semantic search (embeddings)
+- Combine multiple retrieval methods via rank fusion
+- Optimize retrieval quality through query rewriting and reranking
+
 ### [01.01 - Retrieval Intro](./exercises/01-retrieval-skill-building/01.01-retrieval-intro/speaker-notes.md) (Intro)
 
 - What retrieval is: connecting LLMs to private/external data
@@ -52,6 +58,12 @@
 
 ## Section 02: Retrieval Project Work
 
+**Learning Goals:**
+- Apply Section 01 techniques to real project codebase
+- Build production-ready search with embedding cache
+- Implement conversational RAG with streaming and reranking
+- Transition from automatic RAG to agent-controlled tool orchestration
+
 ### [02.01 - Building Your Own Dataset](./exercises/02-retrieval-project-work/02.01-building-your-own-dataset/explainer/readme.md) (Explainer)
 
 - Choose dataset: pre-built (75 or 547 emails) or custom
@@ -92,6 +104,12 @@
 - Agent autonomy: semantic vs filter search, metadata scan → targeted retrieval patterns
 
 ## Section 03: Retrieval Day 2 Skill Building
+
+**Learning Goals:**
+- Understand chunking problem: context window fairness for irregular documents
+- Compare fixed-size (token-based) vs structural (markdown-based) chunking
+- Apply BM25, embeddings, and rank fusion to chunks
+- Improve retrieval precision with reranking
 
 ### [03.01 - Chunking Intro](./exercises/03-retrieval-day-2-skill-building/03.01-chunking-intro/explainer/notes.md) (Explainer)
 
@@ -140,6 +158,12 @@
 - Still in playground, no final answer generation
 
 ## Section 04: Retrieval Day 2 Project Work
+
+**Learning Goals:**
+- Apply chunking techniques to irregular document datasets (notes, docs)
+- Integrate chunked retrieval with existing chat interface
+- Combine multiple data sources (emails + notes) via unified reranking
+- Build complete multi-corpus RAG system
 
 ### [04.01 - Grabbing Your Own Dataset](./exercises/04-retrieval-day-2-project-work/04.01-grabbing-your-own-dataset/explainer/readme.md) (Explainer)
 
@@ -190,6 +214,12 @@
 
 ## Section 05: Memory Skill Building
 
+**Learning Goals:**
+- Build persistent memory system with CRUD operations
+- Distinguish permanent vs situational information
+- Control memory creation via agent tools vs automatic extraction
+- Scale memory systems with semantic recall
+
 ### [05.01 - Basic Memory Setup](./exercises/05-memory-skill-building/05.01-basic-memory-setup/problem/readme.md) (Problem)
 
 - Load and format existing memories from persistent storage
@@ -227,6 +257,12 @@
 - Format and inject retrieved memories into system prompt
 
 ## Section 06: Memory Project Work
+
+**Learning Goals:**
+- Implement memory loading and formatting for LLM consumption
+- Compare approaches: tool-controlled vs automatic vs user-confirmed creation
+- Understand tradeoffs: transparency, latency, cost, user control
+- Build production memory system integrated with chat interface
 
 ### [06.01 - All Memories Upfront](./exercises/06-memory-project-work/06.01-all-memories-upfront/explainer/notes.md) (Explainer)
 
@@ -270,6 +306,12 @@
 
 ## Section 07: Evals Skill Building
 
+**Learning Goals:**
+- Test agent behavior systematically with Evalite framework
+- Verify tool invocation and parameter correctness
+- Generate synthetic test datasets using LLMs
+- Scale testing beyond manual test cases
+
 ### [07.01 - Evaluating Tool Call Agents](./exercises/07-evals-skill-building/07.01-evaluating-tool-call-agents/problem/readme.md) (Problem)
 
 - Test LLM tool calling with Evalite framework
@@ -290,6 +332,12 @@
 - Output 12 conversations (3 per scenario) to test memory extraction systems
 
 ## Section 08: Evals Project Work
+
+**Learning Goals:**
+- Evaluate memory extraction accuracy with operation-specific scorers
+- Generate synthetic test datasets (32 cases across 4 operation types)
+- Compare RAG vs agentic search approaches experimentally
+- Build LLM-as-judge scorer for automated answer quality evaluation
 
 ### [08.01 - Evaluating Memory Extraction](./exercises/08-evals-project-work/08.01-evaluating-memory-tool/explainer/notes.md) (Explainer)
 
@@ -349,6 +397,12 @@
 
 ## Section 09: Human-in-the-Loop Skill Building
 
+**Learning Goals:**
+- Balance LLM autonomy vs risk management with human oversight
+- Implement action lifecycle with custom data parts (start, decision, end)
+- Build approval/rejection flow with user feedback
+- Format custom message history for LLM context
+
 ### [09.01 - HITL Intro](./exercises/09-human-in-the-loop-skill-building/09.01-hitl-intro/explainer/readme.md) (Explainer)
 
 - Balance LLM autonomy vs risk management through human oversight
@@ -399,6 +453,12 @@
 - Pass `messagesAfterHitl` to `getDiary` so LLM sees action outcomes
 
 ## Section 10: Human-in-the-Loop Project Work
+
+**Learning Goals:**
+- Implement destructive tools with API integrations (email, GitHub, calendar)
+- Apply HITL harness to real assistant project
+- Build thread-scoped permission system to reduce approval friction
+- Integrate MCP servers for massive action coverage (30k+ Zapier actions)
 
 ### [10.01 - Building Destructive Tools & Integrations](./exercises/10-human-in-the-loop-project-work/10.01-building-the-destructive-tools/explainer/notes.md) (Explainer)
 
