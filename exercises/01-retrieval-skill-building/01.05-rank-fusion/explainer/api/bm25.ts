@@ -7,8 +7,10 @@ export const searchEmailsViaBM25 = async (
   const emails = await loadEmails();
 
   const scores: number[] = (BM25 as any)(
-    emails.map((email) => `${email.subject} ${email.body}`),
-    keywords,
+    emails.map((email) =>
+      `${email.subject} ${email.body}`.toLowerCase(),
+    ),
+    keywords.map((k) => k.toLowerCase()),
   );
 
   return scores

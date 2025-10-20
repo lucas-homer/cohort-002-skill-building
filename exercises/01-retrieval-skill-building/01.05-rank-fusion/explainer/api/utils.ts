@@ -57,5 +57,10 @@ export function reciprocalRankFusion(
   // Sort by RRF score (descending)
   return Array.from(rrfScores.entries())
     .sort(([, scoreA], [, scoreB]) => scoreB - scoreA)
-    .map(([docId]) => documentMap.get(docId)!);
+    .map(([docId]) => {
+      return {
+        email: documentMap.get(docId)!.email,
+        score: rrfScores.get(docId)!,
+      };
+    });
 }
