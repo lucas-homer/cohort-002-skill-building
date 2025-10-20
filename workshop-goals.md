@@ -93,13 +93,15 @@
 
 ## Section 03: Retrieval Day 2 Skill Building
 
-### [03.01 - Chunking Intro](./exercises/03-retrieval-day-2-skill-building/03.01-chunking-intro/explainer/readme.md) (Explainer)
+### [03.01 - Chunking Intro](./exercises/03-retrieval-day-2-skill-building/03.01-chunking-intro/explainer/notes.md) (Explainer)
 
-- Why chunking needed: handling irregular datasets vs regular pre-chunked emails
-- Problem: large chunks dominate context window
-- Additional problem: wasteful information in fixed-size chunks
-- Solution: chunk documents into regular sizes for balanced retrieval
-- Foundation for fixed-size and structural chunking approaches
+- Irregular datasets (docs, notes) need chunking; emails don't (already uniform)
+- Core problem: large chunks dominate context window, crowd out small relevant sections
+- Context fairness: 8k window fits 1 giant section OR 20 small sections
+- Wasteful info issue: fixed chunks may contain irrelevant text
+- Two approaches preview: fixed-size (token-based + overlap) vs structural (markdown boundaries)
+- Visualize problem: section length distribution shows 100-10,000+ char variance
+- Foundation for 03.02 (fixed chunking), 03.04 (structural), 03.05 (reranking)
 
 ### [03.02 - Fixed Size Chunks](./exercises/03-retrieval-day-2-skill-building/03.02-fixed-size-chunks/explainer/readme.md) (Explainer)
 
