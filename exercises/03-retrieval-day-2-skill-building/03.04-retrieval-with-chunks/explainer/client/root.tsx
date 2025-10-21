@@ -36,16 +36,19 @@ type ChunksResponse = {
 };
 
 const ChunkViewer = () => {
-  const [inputValue, setInputValue] = useState('');
-  const [search, setSearch] = useState('');
+  const [keywordsInput, setKeywordsInput] = useState('TypeScript start beginning');
+  const [semanticInput, setSemanticInput] = useState('How did TypeScript start?');
+  const [keywords, setKeywords] = useState('');
+  const [semantic, setSemantic] = useState('');
   const [page, setPage] = useState(1);
   const [orderBy, setOrderBy] = useState<OrderBy>('rrf');
 
   const { data, isLoading } = useQuery({
-    queryKey: ['chunks', search, page, orderBy],
+    queryKey: ['chunks', keywords, semantic, page, orderBy],
     queryFn: async () => {
       const params = new URLSearchParams({
-        search,
+        keywords,
+        semantic,
         page: page.toString(),
         orderBy,
       });
@@ -55,8 +58,9 @@ const ChunkViewer = () => {
     refetchInterval: 5000,
   });
 
-  const handleSearchSubmit = (value: string) => {
-    setSearch(value);
+  const handleSearchSubmit = (keywordsValue: string, semanticValue: string) => {
+    setKeywords(keywordsValue);
+    setSemantic(semanticValue);
     setPage(1);
   };
 
@@ -65,8 +69,10 @@ const ChunkViewer = () => {
       header={
         <>
           <SearchInput
-            value={inputValue}
-            onChange={setInputValue}
+            keywordsValue={keywordsInput}
+            semanticValue={semanticInput}
+            onKeywordsChange={setKeywordsInput}
+            onSemanticChange={setSemanticInput}
             onSubmit={handleSearchSubmit}
           />
           <OrderSelector value={orderBy} onChange={setOrderBy} />

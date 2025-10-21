@@ -179,13 +179,17 @@ export const ChunkCard = ({
 };
 
 export const SearchInput = ({
-  value,
-  onChange,
+  keywordsValue,
+  semanticValue,
+  onKeywordsChange,
+  onSemanticChange,
   onSubmit,
 }: {
-  value: string;
-  onChange: (value: string) => void;
-  onSubmit: (value: string) => void;
+  keywordsValue: string;
+  semanticValue: string;
+  onKeywordsChange: (value: string) => void;
+  onSemanticChange: (value: string) => void;
+  onSubmit: (keywords: string, semantic: string) => void;
 }) => {
   return (
     <div className="flex-shrink-0 border-b border-border bg-background/80 backdrop-blur-sm">
@@ -193,21 +197,59 @@ export const SearchInput = ({
         <form
           onSubmit={(e) => {
             e.preventDefault();
-            onSubmit(value);
+            onSubmit(keywordsValue, semanticValue);
           }}
+          className="flex flex-col gap-3 max-w-3xl"
         >
-          <input
-            type="text"
-            placeholder="Search chunks... (press Enter)"
-            value={value}
-            onChange={(e) => onChange(e.target.value)}
+          <div className="flex flex-col lg:flex-row gap-3">
+            <div className="flex flex-col gap-1 flex-1">
+              <label className="text-xs text-muted-foreground flex items-center gap-1.5">
+                <Brain className="w-3 h-3 text-pink-400" />
+                Semantic search query
+              </label>
+              <input
+                type="text"
+                placeholder="Enter semantic search query..."
+                value={semanticValue}
+                onChange={(e) => onSemanticChange(e.target.value)}
+                required
+                className={cn(
+                  'w-full rounded-lg border border-input bg-card px-3 py-2 text-sm shadow-sm transition-all',
+                  'placeholder:text-muted-foreground',
+                  'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:border-transparent',
+                  'hover:border-ring/50',
+                )}
+              />
+            </div>
+            <div className="flex flex-col gap-1 flex-1">
+              <label className="text-xs text-muted-foreground flex items-center gap-1.5">
+                <Type className="w-3 h-3 text-blue-400" />
+                Keywords (BM25)
+              </label>
+              <input
+                type="text"
+                placeholder="Enter keywords separated by spaces..."
+                value={keywordsValue}
+                onChange={(e) => onKeywordsChange(e.target.value)}
+                required
+                className={cn(
+                  'w-full rounded-lg border border-input bg-card px-3 py-2 text-sm shadow-sm transition-all',
+                  'placeholder:text-muted-foreground',
+                  'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:border-transparent',
+                  'hover:border-ring/50',
+                )}
+              />
+            </div>
+          </div>
+          <button
+            type="submit"
             className={cn(
-              'w-full rounded-lg border border-input bg-card px-4 py-2.5 text-sm shadow-sm transition-all max-w-lg',
-              'placeholder:text-muted-foreground',
-              'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:border-transparent',
-              'hover:border-ring/50',
+              'px-4 py-2 text-sm font-medium rounded-lg border border-border transition-all self-start',
+              'bg-card text-foreground hover:bg-accent hover:text-accent-foreground',
             )}
-          />
+          >
+            Search
+          </button>
         </form>
       </div>
     </div>
