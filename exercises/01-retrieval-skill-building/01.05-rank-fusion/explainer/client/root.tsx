@@ -56,7 +56,6 @@ const EmailViewer = () => {
       const res = await fetch(`/api/emails?${params}`);
       return (await res.json()) as EmailsResponse;
     },
-    refetchInterval: 5000,
   });
 
   const handleSearchSubmit = (value: string) => {

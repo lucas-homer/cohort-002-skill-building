@@ -53,7 +53,6 @@ const ChunkViewer = () => {
       const res = await fetch(`/api/chunks?${params}`);
       return (await res.json()) as ChunksResponse;
     },
-    refetchInterval: 5000,
   });
 
   const handleSearchSubmit = (
