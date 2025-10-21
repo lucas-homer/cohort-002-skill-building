@@ -36,15 +36,17 @@ type ChunksResponse = {
 };
 
 const ChunkViewer = () => {
-  const [search, setSearch] = useState('');
+  const [keywords, setKeywords] = useState('TypeScript start beginning');
+  const [semantic, setSemantic] = useState('How did TypeScript start?');
   const [page, setPage] = useState(1);
   const [rerankCount, setRerankCount] = useState(30);
 
   const { data, isLoading, refetch } = useQuery({
-    queryKey: ['chunks', search, page, rerankCount],
+    queryKey: ['chunks', keywords, semantic, page, rerankCount],
     queryFn: async () => {
       const params = new URLSearchParams({
-        search,
+        keywords,
+        semantic,
         page: page.toString(),
         rerankCount: rerankCount.toString(),
       });
@@ -55,10 +57,12 @@ const ChunkViewer = () => {
   });
 
   const handleSearchSubmit = (
-    searchValue: string,
+    keywordsValue: string,
+    semanticValue: string,
     rerankValue: number,
   ) => {
-    setSearch(searchValue);
+    setKeywords(keywordsValue);
+    setSemantic(semanticValue);
     setRerankCount(rerankValue);
     setPage(1);
     refetch();
@@ -69,7 +73,8 @@ const ChunkViewer = () => {
       header={
         <>
           <SearchForm
-            searchValue={search}
+            keywordsValue={keywords}
+            semanticValue={semantic}
             rerankValue={rerankCount}
             onSubmit={handleSearchSubmit}
           />

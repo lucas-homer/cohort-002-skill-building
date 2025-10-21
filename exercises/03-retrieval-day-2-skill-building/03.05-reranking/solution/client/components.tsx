@@ -186,20 +186,23 @@ const RerankStatusBadge = ({
 };
 
 export const SearchForm = ({
-  searchValue,
+  keywordsValue,
+  semanticValue,
   rerankValue,
   onSubmit,
 }: {
-  searchValue: string;
+  keywordsValue: string;
+  semanticValue: string;
   rerankValue: number;
-  onSubmit: (searchValue: string, rerankValue: number) => void;
+  onSubmit: (keywordsValue: string, semanticValue: string, rerankValue: number) => void;
 }) => {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     const formData = new FormData(e.target as HTMLFormElement);
-    const search = formData.get('search') as string;
+    const keywords = formData.get('keywords') as string;
+    const semantic = formData.get('semantic') as string;
     const rerank = formData.get('rerank') as string;
-    onSubmit(search, parseInt(rerank, 10) || 0);
+    onSubmit(keywords, semantic, parseInt(rerank, 10) || 0);
   };
 
   return (
@@ -208,21 +211,48 @@ export const SearchForm = ({
         <form
           onSubmit={handleSubmit}
           id="search-form"
-          className="flex items-center gap-4"
+          className="flex flex-col gap-3 max-w-3xl"
         >
-          <input
-            type="text"
-            placeholder="Search chunks... (press Enter)"
-            defaultValue={searchValue}
-            name="search"
-            className={cn(
-              'flex-1 rounded-lg border border-input bg-card px-4 py-2.5 text-sm shadow-sm transition-all max-w-lg',
-              'placeholder:text-muted-foreground',
-              'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:border-transparent',
-              'hover:border-ring/50',
-            )}
-          />
-          <input type="submit" value="Search" hidden />
+          <div className="flex flex-col lg:flex-row gap-3">
+            <div className="flex flex-col gap-1 flex-1">
+              <label className="text-xs text-muted-foreground flex items-center gap-1.5">
+                <Brain className="w-3 h-3 text-pink-400" />
+                Semantic search query
+              </label>
+              <input
+                type="text"
+                placeholder="Enter semantic search query..."
+                defaultValue={semanticValue}
+                name="semantic"
+                required
+                className={cn(
+                  'w-full rounded-lg border border-input bg-card px-3 py-2 text-sm shadow-sm transition-all',
+                  'placeholder:text-muted-foreground',
+                  'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:border-transparent',
+                  'hover:border-ring/50',
+                )}
+              />
+            </div>
+            <div className="flex flex-col gap-1 flex-1">
+              <label className="text-xs text-muted-foreground flex items-center gap-1.5">
+                <Type className="w-3 h-3 text-blue-400" />
+                Keywords (BM25)
+              </label>
+              <input
+                type="text"
+                placeholder="Enter keywords separated by spaces..."
+                defaultValue={keywordsValue}
+                name="keywords"
+                required
+                className={cn(
+                  'w-full rounded-lg border border-input bg-card px-3 py-2 text-sm shadow-sm transition-all',
+                  'placeholder:text-muted-foreground',
+                  'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:border-transparent',
+                  'hover:border-ring/50',
+                )}
+              />
+            </div>
+          </div>
           <div className="flex items-center gap-3">
             <label
               htmlFor="rerank-count"
@@ -247,6 +277,15 @@ export const SearchForm = ({
             <span className="text-xs text-muted-foreground whitespace-nowrap">
               chunks
             </span>
+            <button
+              type="submit"
+              className={cn(
+                'px-4 py-2 text-sm font-medium rounded-lg border border-border transition-all ml-auto',
+                'bg-card text-foreground hover:bg-accent hover:text-accent-foreground',
+              )}
+            >
+              Search
+            </button>
           </div>
         </form>
       </div>
