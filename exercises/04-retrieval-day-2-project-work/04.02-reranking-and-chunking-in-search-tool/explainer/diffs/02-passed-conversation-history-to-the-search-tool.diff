@@ -1,0 +1,263 @@
+commit b207ef0c3bb17a9228df5682426e94047abdc59a
+Author: Matt Pocock <mattpocockvoice@gmail.com>
+Date:   Wed Oct 29 14:45:46 2025 +0000
+
+    04.02.02 Passed conversation history to the search tool
+
+diff --git a/src/app/api/chat/route.ts b/src/app/api/chat/route.ts
+index 370f8fe..a612f38 100644
+--- a/src/app/api/chat/route.ts
++++ b/src/app/api/chat/route.ts
+@@ -111,30 +111,30 @@ You are an email assistant that helps users find and understand information from
+ <the-ask>
+ Here is the user's question. Search their emails first, then provide your answer based on what you find.
+ </the-ask>
+         `,
+         tools: {
+-          search: searchTool,
++          search: searchTool(messages),
+         },
+         stopWhen: [stepCountIs(10)],
+       });
+ 
+       writer.merge(
+         result.toUIMessageStream({
+           sendSources: true,
+           sendReasoning: true,
+         })
+       );
+ 
+       await generateTitlePromise;
+     },
+     generateId: () => crypto.randomUUID(),
+     onFinish: async ({ responseMessage }) => {
+       await appendToChatMessages(chatId, [responseMessage]);
+     },
+   });
+ 
+   // send sources and reasoning back to the client
+   return createUIMessageStreamResponse({
+     stream,
+   });
+ }
+diff --git a/src/app/api/chat/search-tool.ts b/src/app/api/chat/search-tool.ts
+index 78b5a03..9d163d8 100644
+--- a/src/app/api/chat/search-tool.ts
++++ b/src/app/api/chat/search-tool.ts
+@@ -6,65 +6,76 @@ import {
+   searchWithEmbeddings,
+ } from "@/app/search";
+ import { rerankEmails } from "@/app/rerank";
+-import { tool } from "ai";
++import { convertToModelMessages, tool, UIMessage } from "ai";
+ import { z } from "zod";
+ 
+ const NUMBER_PASSED_TO_RERANKER = 30;
+ 
+-export const searchTool = tool({
+-  description:
+-    "Search emails using both keyword and semantic search. Returns most relevant emails ranked by reciprocal rank fusion.",
+-  inputSchema: z.object({
+-    keywords: z
+-      .array(z.string())
+-      .describe(
+-        "Exact keywords for BM25 search (names, amounts, specific terms)"
+-      )
+-      .optional(),
+-    searchQuery: z
+-      .string()
+-      .describe("Natural language query for semantic search (broader concepts)")
+-      .optional(),
+-  }),
+-  execute: async ({ keywords, searchQuery }) => {
+-    console.log("Keywords:", keywords);
+-    console.log("Search query:", searchQuery);
++export const searchTool = (messages: UIMessage[]) =>
++  tool({
++    description:
++      "Search emails using both keyword and semantic search. Returns most relevant emails ranked by reciprocal rank fusion.",
++    inputSchema: z.object({
++      keywords: z
++        .array(z.string())
++        .describe(
++          "Exact keywords for BM25 search (names, amounts, specific terms)"
++        )
++        .optional(),
++      searchQuery: z
++        .string()
++        .describe(
++          "Natural language query for semantic search (broader concepts)"
++        )
++        .optional(),
++    }),
++    execute: async ({ keywords, searchQuery }) => {
++      console.log("Keywords:", keywords);
++      console.log("Search query:", searchQuery);
+ 
+-    const emails = await loadEmails();
+-    const emailChunks = await chunkEmails(emails);
++      const emails = await loadEmails();
++      const emailChunks = await chunkEmails(emails);
+ 
+-    // Use search algorithm from lesson 2.2
+-    const bm25Results = keywords
+-      ? await searchWithBM25(keywords, emailChunks)
+-      : [];
+-    const embeddingResults = searchQuery
+-      ? await searchWithEmbeddings(searchQuery, emailChunks)
+-      : [];
+-    const rrfResults = reciprocalRankFusion([
+-      // Only take the top NUMBER_PASSED_TO_RERANKER results from each search
+-      bm25Results.slice(0, NUMBER_PASSED_TO_RERANKER),
+-      embeddingResults.slice(0, NUMBER_PASSED_TO_RERANKER),
+-    ]);
++      // Use search algorithm from lesson 2.2
++      const bm25Results = keywords
++        ? await searchWithBM25(keywords, emailChunks)
++        : [];
++      const embeddingResults = searchQuery
++        ? await searchWithEmbeddings(searchQuery, emailChunks)
++        : [];
++      const rrfResults = reciprocalRankFusion([
++        // Only take the top NUMBER_PASSED_TO_RERANKER results from each search
++        bm25Results.slice(0, NUMBER_PASSED_TO_RERANKER),
++        embeddingResults.slice(0, NUMBER_PASSED_TO_RERANKER),
++      ]);
+ 
+-    // Rerank results using LLM
+-    const query = [keywords?.join(" "), searchQuery].filter(Boolean).join(" ");
+-    const rerankedResults = await rerankEmails(
+-      rrfResults.slice(0, NUMBER_PASSED_TO_RERANKER),
+-      query
+-    );
++      // Get conversation history without the tool calls
++      const conversationHistory = convertToModelMessages(messages).filter(
++        (m) => m.role === "user" || m.role === "assistant"
++      );
+ 
+-    // Return full email objects
+-    const topEmails = rerankedResults.map((r) => ({
+-      id: r.email.id,
+-      subject: r.email.subject,
+-      body: r.email.chunk,
+-      score: r.score,
+-    }));
++      // Rerank results using LLM
++      const query = [keywords?.join(" "), searchQuery]
++        .filter(Boolean)
++        .join(" ");
++      const rerankedResults = await rerankEmails(
++        rrfResults.slice(0, NUMBER_PASSED_TO_RERANKER),
++        query,
++        conversationHistory
++      );
+ 
+-    console.log("Top emails:", topEmails.length);
++      // Return full email objects
++      const topEmails = rerankedResults.map((r) => ({
++        id: r.email.id,
++        subject: r.email.subject,
++        body: r.email.chunk,
++        score: r.score,
++      }));
+ 
+-    return {
+-      emails: topEmails,
+-    };
+-  },
+-});
++      console.log("Top emails:", topEmails.length);
++
++      return {
++        emails: topEmails,
++      };
++    },
++  });
+diff --git a/src/app/rerank.ts b/src/app/rerank.ts
+index 5c5646a..49ecca3 100644
+--- a/src/app/rerank.ts
++++ b/src/app/rerank.ts
+@@ -1,5 +1,5 @@
+ import { google } from "@ai-sdk/google";
+-import { generateObject } from "ai";
++import { generateObject, ModelMessage } from "ai";
+ import { z } from "zod";
+ 
+ type ResultWithEmail = {
+@@ -13,17 +13,18 @@ type ResultWithEmail = {
+ 
+ export const rerankEmails = async (
+   results: ResultWithEmail[],
+-  query: string
++  query: string,
++  conversationHistory: ModelMessage[]
+ ): Promise<ResultWithEmail[]> => {
+   const resultsWithId = results.map((result, index) => ({
+     ...result,
+     id: index,
+   }));
+ 
+   const resultsAsMap = new Map(
+     resultsWithId.map((result) => [result.id, result])
+   );
+   // Call reranker LLM
+   const rerankedResults = await generateObject({
+     model: google("gemini-2.5-flash-lite"),
+     system: `You are a search result reranker. Your job is to analyze a list of email chunks and return only the IDs of the most relevant chunks for answering the user's question.
+@@ -37,33 +38,39 @@ You should be selective and only include chunks that are genuinely helpful for a
+ Return the IDs as a simple array of numbers.`,
+     schema: z.object({
+       resultIds: z
+         .array(z.number())
+         .describe("Array of IDs for the most relevant chunks"),
+     }),
+-    prompt: `
+-      Search query:
+-      ${query}
++    messages: [
++      ...conversationHistory,
++      {
++        role: "user",
++        content: `
++          Search query:
++          ${query}
+ 
+-      Available chunks:
+-      ${resultsWithId
+-        .map((resultWithId) =>
+-          [
+-            `## ID: ${resultWithId.id}`,
+-            `Subject: ${resultWithId.email.subject}`,
+-            `<content>`,
+-            resultWithId.email.chunk,
+-            `</content>`,
+-          ].join("\n\n")
+-        )
+-        .join("\n\n")}
++          Available chunks:
++          ${resultsWithId
++            .map((resultWithId) =>
++              [
++                `## ID: ${resultWithId.id}`,
++                `Subject: ${resultWithId.email.subject}`,
++                `<content>`,
++                resultWithId.email.chunk,
++                `</content>`,
++              ].join("\n\n")
++            )
++            .join("\n\n")}
+ 
+-      Return only the IDs of the most relevant chunks for the user's search query.
+-    `,
++          Return only the IDs of the most relevant chunks for the user's search query.
++        `,
++      },
++    ],
+   });
+ 
+   console.log("Reranked results:", rerankedResults.object.resultIds);
+ 
+   return rerankedResults.object.resultIds
+     .map((id) => resultsAsMap.get(id))
+     .filter((r) => r !== undefined);
+ };

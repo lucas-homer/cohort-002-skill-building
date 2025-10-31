@@ -160,39 +160,42 @@
 
 ### [04.01 - Chunking Emails Playground](./exercises/04-retrieval-day-2-project-work/04.01-chunking-emails-playground/explainer/notes.md) (Explainer)
 
-- Apply Section 03 chunking techniques to emails dataset in playground
-- Experiment with structural chunking (email threads, quoted replies)
-- Experiment with fixed-size chunking for long email bodies
-- Visualize chunk boundaries and sizes on email corpus
-- Understand when chunking benefits emails: long threads, attachments, quoted text
-- Foundation for integrating chunking into search tool
+- Add `@langchain/textsplitters` dependency for chunking utilities
+- Chunk emails using `RecursiveCharacterTextSplitter` (1000 char size, 100 overlap)
+- Apply BM25 + embeddings + RRF to email chunks instead of full emails
+- Use content-based hashing (SHA-256) for embedding cache instead of email IDs
+- Track chunk index and total chunks per email for visualization
+- Display chunk information (e.g., "Chunk 2 of 5") in search results UI
+- Understand when chunking benefits emails: long threads, quoted text, fair context window usage
 
 ### [04.02 - Reranking & Chunking in Search Tool](./exercises/04-retrieval-day-2-project-work/04.02-reranking-and-chunking-in-search-tool/explainer/notes.md) (Explainer)
 
-- Add chunking to `searchSemanticEmails` tool from lesson 2.3
-- Chunk emails before BM25 + embeddings + RRF retrieval
-- Add mandatory reranking step: pass top 30 chunks to reranker LLM, return relevant IDs only
-- Token optimization: reranker returns chunk IDs not full content
-- Handle LLM hallucination of non-existent chunk IDs
-- Trade latency for improved retrieval precision
+- Integrate reranking step after RRF: pass top 30 chunks to reranker LLM
+- Reranker analyzes chunks with IDs, returns only relevant chunk IDs (not full content)
+- Pass conversation history to reranker for context-aware filtering
+- Filter and map returned IDs back to chunk objects
+- Display tool calls in frontend with collapsible UI components
+- Return metadata (from/to/subject) in search results for transparency
+- Trade latency for improved retrieval precision via LLM-based filtering
 
 ### [04.03 - Custom Filter Tools](./exercises/04-retrieval-day-2-project-work/04.03-custom-filter-tools/explainer/notes.md) (Explainer)
 
-- Build `filterEmails` tool for traditional filtering alongside semantic search
-- Parameters: `from`, `to`, `contains`, `before`, `after`, `limit`, `contentLevel`
-- `contentLevel` union: `subjectOnly` (metadata), `fullContent` (with body), `fullThread` (entire thread)
-- Agent chooses between semantic search vs filter search based on query type
-- Combine tools in multi-step workflows with `stopWhen: stepCountIs(5)`
-- System prompt engineering: guide agent on when to use each tool
+- Build `filterEmails` tool for exact criteria filtering (from/to/contains/before/after/limit)
+- Partial match, case-insensitive filtering on sender, recipient, text content, timestamps
+- System prompt guides agent: use filter for exact criteria, search for semantic queries
+- Display both tools in frontend with separate UI components (different parameter displays)
+- Extract `EmailResultsGrid` as shared component for displaying email results
+- Agent autonomously chooses filter vs search based on query type (e.g., "emails from John" uses filter)
 
 ### [04.04 - Metadata-First Retrieval Pattern](./exercises/04-retrieval-day-2-project-work/04.04-metadata-first-retrieval-pattern/explainer/notes.md) (Explainer)
 
-- Modify `searchSemanticEmails` and `filterEmails` to return metadata only by default
-- Build `getEmailById` tool: accepts array of email IDs for targeted full content retrieval
-- Optional `includeThread` parameter to retrieve entire conversation thread
-- Metadata scan → targeted retrieval pattern: agent browses subjects first, fetches content selectively
-- Token efficiency: avoid loading full email bodies until agent confirms relevance
-- Multi-step agentic workflow: search → filter results → fetch specific emails → answer
+- Modify search/filter tools to return metadata + 150-char snippet only (id/threadId/subject/from/to/timestamp/snippet)
+- Build `getEmailsByIds` tool: accepts array of email IDs for targeted full content retrieval
+- Add `includeThread` boolean parameter to fetch entire conversation threads by threadId
+- When includeThread=true: gather unique threadIds, fetch all emails in those threads, sort by timestamp
+- Multi-step workflow: browse subjects/snippets → select relevant IDs → fetch full content → answer
+- Token efficiency: avoid loading full bodies until agent confirms relevance from snippets
+- Display snippets in grid UI, full emails in expanded detail view with thread context
 
 ## Section 05: Memory Skill Building
 

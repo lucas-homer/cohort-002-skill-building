@@ -1,0 +1,260 @@
+commit 82ec9b2acb422c77d413f8d475c89cd9974090b0
+Author: Matt Pocock <mattpocockvoice@gmail.com>
+Date:   Fri Oct 31 15:43:14 2025 +0000
+
+    04.03.01 Added filterEmails tool
+
+diff --git a/src/app/api/chat/filter-tool.ts b/src/app/api/chat/filter-tool.ts
+new file mode 100644
+index 0000000..032ca27
+--- /dev/null
++++ b/src/app/api/chat/filter-tool.ts
+@@ -0,0 +1,100 @@
++import { loadEmails } from "@/app/search";
++import { tool } from "ai";
++import { z } from "zod";
++
++export const filterEmailsTool = tool({
++  description:
++    "Filter emails by exact criteria like sender, recipient, date range, or text content. Use this for precise filtering (e.g., 'emails from John', 'emails before 2024-01-01', 'emails containing invoice').",
++  inputSchema: z.object({
++    from: z
++      .string()
++      .describe("Filter by sender email/name (partial match, case-insensitive)")
++      .optional(),
++    to: z
++      .string()
++      .describe(
++        "Filter by recipient email/name (partial match, case-insensitive)"
++      )
++      .optional(),
++    contains: z
++      .string()
++      .describe(
++        "Filter by text in subject or body (partial match, case-insensitive)"
++      )
++      .optional(),
++    before: z
++      .string()
++      .describe(
++        "Filter emails before this ISO 8601 timestamp (e.g., '2024-01-01T00:00:00Z')"
++      )
++      .optional(),
++    after: z
++      .string()
++      .describe(
++        "Filter emails after this ISO 8601 timestamp (e.g., '2024-01-01T00:00:00Z')"
++      )
++      .optional(),
++    limit: z
++      .number()
++      .describe("Maximum number of results to return")
++      .default(10),
++  }),
++  execute: async ({ from, to, contains, before, after, limit }) => {
++    console.log("Filter params:", { from, to, contains, before, after, limit });
++
++    const emails = await loadEmails();
++
++    // Apply filters
++    let filtered = emails;
++
++    if (from) {
++      const lowerFrom = from.toLowerCase();
++      filtered = filtered.filter((email) =>
++        email.from.toLowerCase().includes(lowerFrom)
++      );
++    }
++
++    if (to) {
++      const lowerTo = to.toLowerCase();
++      filtered = filtered.filter((email) => {
++        const toStr = Array.isArray(email.to) ? email.to.join(" ") : email.to;
++        return toStr.toLowerCase().includes(lowerTo);
++      });
++    }
++
++    if (contains) {
++      const lowerContains = contains.toLowerCase();
++      filtered = filtered.filter(
++        (email) =>
++          email.subject.toLowerCase().includes(lowerContains) ||
++          email.body.toLowerCase().includes(lowerContains)
++      );
++    }
++
++    if (before) {
++      filtered = filtered.filter((email) => email.timestamp < before);
++    }
++
++    if (after) {
++      filtered = filtered.filter((email) => email.timestamp > after);
++    }
++
++    // Apply limit
++    const results = filtered.slice(0, limit);
++
++    console.log(
++      `Filtered ${filtered.length} emails, returning ${results.length}`
++    );
++
++    return {
++      emails: results.map((email) => ({
++        id: email.id,
++        subject: email.subject,
++        body: email.body,
++        from: email.from,
++        to: email.to,
++        timestamp: email.timestamp,
++      })),
++    };
++  },
++});
+diff --git a/src/app/api/chat/route.ts b/src/app/api/chat/route.ts
+index 594c2a9..4c05f70 100644
+--- a/src/app/api/chat/route.ts
++++ b/src/app/api/chat/route.ts
+@@ -18,6 +18,7 @@ import {
+ } from "ai";
+ import { generateTitleForChat } from "./generate-title";
+ import { searchTool } from "./search-tool";
++import { filterEmailsTool } from "./filter-tool";
+ 
+ // Allow streaming responses up to 30 seconds
+ export const maxDuration = 30;
+@@ -32,113 +33,128 @@ export type MyMessage = UIMessage<
+ 
+ const getTools = (messages: UIMessage[]) => ({
+   search: searchTool(messages),
++  filterEmails: filterEmailsTool,
+ });
+ 
+ export async function POST(req: Request) {
+   const body: {
+     messages: UIMessage[];
+     id: string;
+   } = await req.json();
+ 
+   const chatId = body.id;
+ 
+   const validatedMessagesResult = await safeValidateUIMessages<MyMessage>({
+     messages: body.messages,
+   });
+ 
+   if (!validatedMessagesResult.success) {
+     return new Response(validatedMessagesResult.error.message, { status: 400 });
+   }
+ 
+   const messages = validatedMessagesResult.data;
+ 
+   let chat = await getChat(chatId);
+   const mostRecentMessage = messages[messages.length - 1];
+ 
+   if (!mostRecentMessage) {
+     return new Response("No messages provided", { status: 400 });
+   }
+ 
+   if (mostRecentMessage.role !== "user") {
+     return new Response("Last message must be from the user", {
+       status: 400,
+     });
+   }
+ 
+   const stream = createUIMessageStream<MyMessage>({
+     execute: async ({ writer }) => {
+       let generateTitlePromise: Promise<void> | undefined = undefined;
+ 
+       if (!chat) {
+         const newChat = await createChat({
+           id: chatId,
+           title: "Generating title...",
+           initialMessages: messages,
+         });
+         chat = newChat;
+ 
+         writer.write({
+           type: "data-frontend-action",
+           data: "refresh-sidebar",
+           transient: true,
+         });
+ 
+         generateTitlePromise = generateTitleForChat(messages)
+           .then((title) => {
+             return updateChatTitle(chatId, title);
+           })
+           .then(() => {
+             writer.write({
+               type: "data-frontend-action",
+               data: "refresh-sidebar",
+               transient: true,
+             });
+           });
+       } else {
+         await appendToChatMessages(chatId, [mostRecentMessage]);
+       }
+ 
+       const result = streamText({
+-        model: google("gemini-2.5-flash-lite"),
++        model: google("gemini-2.5-flash"),
+         messages: convertToModelMessages(messages),
+         system: `
+ <task-context>
+ You are an email assistant that helps users find and understand information from their emails.
+ </task-context>
+ 
+ <rules>
+-- You MUST use the search tool for ANY question about emails, people, amounts, dates, or specific information
+-- NEVER answer from your training data - always search the actual emails first
+-- If the first search doesn't find enough information, try different keywords or search queries
+-- Use both semantic (searchQuery) and keyword (keywords) search parameters together for best results
+-- Only after searching should you formulate your answer based on the search results
++- You have TWO tools available: 'search' and 'filterEmails'
++- Choose the appropriate tool based on the query type:
++
++  USE 'filterEmails' when the user wants to:
++  - Find emails from/to specific people (e.g., "emails from John", "emails to sarah@example.com")
++  - Filter by date ranges (e.g., "emails before January 2024", "emails after last week")
++  - Find emails containing exact text (e.g., "emails containing 'invoice'")
++  - Any combination of precise filtering criteria
++
++  USE 'search' when the user wants to:
++  - Find information semantically (e.g., "emails about the project deadline")
++  - Search by concepts or topics (e.g., "discussions about budget")
++  - Find answers to questions (e.g., "what did John say about the meeting?")
++  - Any query requiring understanding of meaning/context
++  - Find people by name or description (e.g., "Mike's biggest client")
++
++- NEVER answer from your training data - always use tools first
++- If the first query doesn't find enough information, try different approaches or tools
++- Only after using tools should you formulate your answer based on the results
+ </rules>
+ 
+ <the-ask>
+-Here is the user's question. Search their emails first, then provide your answer based on what you find.
++Here is the user's question. Use the appropriate tool(s) first, then provide your answer based on what you find.
+ </the-ask>
+         `,
+         tools: getTools(messages),
+         stopWhen: [stepCountIs(10)],
+       });
+ 
+       writer.merge(
+         result.toUIMessageStream({
+           sendSources: true,
+           sendReasoning: true,
+         })
+       );
+ 
+       await generateTitlePromise;
+     },
+     generateId: () => crypto.randomUUID(),
+     onFinish: async ({ responseMessage }) => {
+       await appendToChatMessages(chatId, [responseMessage]);
+     },
+   });
+ 
+   // send sources and reasoning back to the client
+   return createUIMessageStreamResponse({
+     stream,
+   });
+ }
