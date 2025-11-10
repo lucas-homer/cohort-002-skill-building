@@ -12,7 +12,7 @@ import { z } from 'zod';
 const tools = {
   askForClarification: tool({
     description:
-      'Ask the user clarifying questions when their request is missing critical information needed to complete the task. Provide pre-filled answer options for each question when possible.',
+      'This tool is used to ask the user clarifying questions when their request is missing critical information needed to complete the task. Provide pre-filled answer options for each question when possible.',
     inputSchema: z.object({
       questions: z
         .array(
@@ -395,13 +395,81 @@ export const runAgent = (
 
 When the user makes a request that is missing critical information needed to complete the task, use the askForClarification tool to ask for the missing information. Provide pre-filled answer options when possible to make it easier for the user to respond.
 
-Examples of when to ask for clarification:
-- "Book a flight to Paris" - missing departure city, dates, number of passengers
-- "Send an email to John" - missing John's email address, subject, and body content
-- "Create an invoice" - missing client details, line items, and amounts
-- "Set a reminder" - missing the time and what to remind about
+Examples of when to use the askForClarification tool:
 
-Do NOT ask for clarification if the request already contains all the necessary information to complete the task.`,
+1. "Book a flight to Paris"
+{
+  "questions": [
+    {
+      "question": "Where are you departing from?",
+      "field": "from",
+      "options": ["New York", "London", "Los Angeles", "San Francisco", "Chicago"]
+    },
+    {
+      "question": "When would you like to depart?",
+      "field": "departDate",
+      "options": ["Today", "Tomorrow", "This weekend", "Next week"]
+    },
+    {
+      "question": "How many passengers?",
+      "field": "passengers",
+      "options": ["1", "2", "3", "4+"]
+    }
+  ]
+}
+
+2. "Send an email to John"
+{
+  "questions": [
+    {
+      "question": "What is John's email address?",
+      "field": "to",
+      "options": ["john@company.com", "john.smith@company.com", "john.doe@company.com"]
+    },
+    {
+      "question": "What should the subject line be?",
+      "field": "subject",
+      "options": ["Follow-up", "Meeting request", "Quick question"]
+    },
+    {
+      "question": "What would you like to say in the email?",
+      "field": "body",
+      "options": ["I'll write my own message"]
+    }
+  ]
+}
+
+3. "Create an invoice"
+{
+  "questions": [
+    {
+      "question": "What is the client's name?",
+      "field": "clientName",
+      "options": ["Acme Corp", "Tech Startup Inc", "Global Services LLC"]
+    },
+    {
+      "question": "What is the client's email address?",
+      "field": "clientEmail",
+      "options": ["billing@client.com", "accounts@client.com"]
+    },
+    {
+      "question": "What items or services are you invoicing for?",
+      "field": "items",
+      "options": ["Consulting services", "Software development", "Design work", "Custom items"]
+    },
+    {
+      "question": "When is payment due?",
+      "field": "dueDate",
+      "options": ["Net 15", "Net 30", "Net 60", "Due on receipt"]
+    }
+  ]
+}
+
+Do NOT ask for clarification if the request already contains all the necessary information to complete the task.
+
+ONLY ask for clarification using the askForClarification tool.
+
+`,
   });
 
   return result;

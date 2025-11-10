@@ -3,8 +3,18 @@ import { evalite } from 'evalite';
 import { runAgent } from './agent.ts';
 import { google } from '@ai-sdk/google';
 import { createUIMessageFixture } from '#shared/create-ui-message-fixture.ts';
+import { openai } from '@ai-sdk/openai';
 
-evalite('Ask For Clarification Evaluation', {
+evalite.each([
+  {
+    name: 'Gemini 2.0 Flash',
+    input: google('gemini-2.0-flash'),
+  },
+  {
+    name: 'GPT-4.1 Mini',
+    input: openai('gpt-4.1-mini'),
+  },
+])('Ask For Clarification Evaluation', {
   data: [
     // Flight booking with missing critical details
     {
