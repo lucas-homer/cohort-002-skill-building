@@ -41,7 +41,7 @@ We are already doing some of this with our BM25. BM25 requires a list of keyword
 
 ```ts
 const keywords = await generateObject({
-  model: google('gemini-2.0-flash-001'),
+  model: google('gemini-2.5-flash'),
   system: `You are a helpful email assistant, able to search emails for information.
     Your job is to generate a list of keywords which will be used to search the emails.
   `,

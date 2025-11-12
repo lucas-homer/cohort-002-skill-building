@@ -17,7 +17,7 @@ export const POST = async (req: Request): Promise<Response> => {
   const stream = createUIMessageStream({
     execute: async ({ writer }) => {
       const keywords = await generateObject({
-        model: google('gemini-2.0-flash-001'),
+        model: google('gemini-2.5-flash'),
         system: `You are a helpful TypeScript book assistant, able to search book content for information.
           Your job is to generate a list of keywords which will be used to search the book.
           You should also generate a search query which will be used to search the book. This will be used for semantic search, so can be more general.

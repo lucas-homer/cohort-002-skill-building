@@ -24,7 +24,7 @@ Files: [`api/chat.ts`](./explainer/api/chat.ts), [`api/search.ts`](./explainer/a
 
 ```ts
 const queryRewriterResult = await generateObject({
-  model: google('gemini-2.0-flash-001'),
+  model: google('gemini-2.5-flash'),
   schema: z.object({
     keywords: z.array(z.string()),
     searchQuery: z.string(),
@@ -45,9 +45,18 @@ File: [`api/search.ts`](./explainer/api/search.ts)
 - RRF combines rankings from both methods, balancing precision + recall
 
 ```ts
-const embeddingsResults = await searchViaEmbeddings(memories, searchQuery);
-const bm25Results = await searchViaBM25(memories, keywordsForBM25);
-const rrfResults = reciprocalRankFusion([embeddingsResults, bm25Results]);
+const embeddingsResults = await searchViaEmbeddings(
+  memories,
+  searchQuery,
+);
+const bm25Results = await searchViaBM25(
+  memories,
+  keywordsForBM25,
+);
+const rrfResults = reciprocalRankFusion([
+  embeddingsResults,
+  bm25Results,
+]);
 ```
 
 #### Phase 3: Top-N Selection

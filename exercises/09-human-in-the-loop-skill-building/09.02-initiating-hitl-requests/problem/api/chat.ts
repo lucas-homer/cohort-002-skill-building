@@ -13,8 +13,9 @@ import { sendEmail } from './email-service.ts';
 export type MyMessage = UIMessage<
   unknown,
   {
-    // TODO: declare an approval-request  part that
-    // contains the tool that will be performed
+    // TODO: declare an approval-request data part that
+    // contains the tool that will be called, including
+    // its id, type, to, subject, and content.
     'approval-request': TODO;
   }
 >;
@@ -26,7 +27,7 @@ export const POST = async (req: Request): Promise<Response> => {
   const stream = createUIMessageStream<MyMessage>({
     execute: async ({ writer }) => {
       const streamTextResponse = streamText({
-        model: google('gemini-2.0-flash-001'),
+        model: google('gemini-2.5-flash'),
         system: `
           You are a helpful assistant that can send emails.
           You will be given a diary of the conversation so far.
@@ -54,7 +55,7 @@ export const POST = async (req: Request): Promise<Response> => {
         // TODO: we now want a second stop condition - we
         // want to stop EITHER when the step count is 10,
         // OR when the agent has sent the sendEmail tool call.
-        stopWhen: stepCountIs(10),
+        stopWhen: [stepCountIs(10)],
       });
 
       writer.merge(streamTextResponse.toUIMessageStream());

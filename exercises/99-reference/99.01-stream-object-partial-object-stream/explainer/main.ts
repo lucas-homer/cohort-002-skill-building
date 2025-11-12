@@ -4,7 +4,7 @@ import { setTimeout } from 'node:timers/promises';
 import z from 'zod';
 
 const result = streamObject({
-  model: google('gemini-2.0-flash-001'),
+  model: google('gemini-2.5-flash'),
   prompt:
     'You are generating test data for an application. Generate a large list of users.',
   schema: z.object({

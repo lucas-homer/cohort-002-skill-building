@@ -191,7 +191,7 @@ export const POST = async (req: Request): Promise<Response> => {
       console.log(getDiary(messagesAfterHitl));
 
       const streamTextResponse = streamText({
-        model: google('gemini-2.0-flash-001'),
+        model: google('gemini-2.5-flash'),
         system: `
           You are a helpful assistant that can send emails.
           You will be given a diary of the conversation so far.

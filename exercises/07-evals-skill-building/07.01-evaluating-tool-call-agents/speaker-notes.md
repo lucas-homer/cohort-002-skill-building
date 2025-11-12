@@ -32,7 +32,7 @@
 
 - Task receives test input, returns result for scoring
 - Use `generateText` not `streamText` - evals need synchronous results
-- Pass model: `google('gemini-2.0-flash-001')`
+- Pass model: `google('gemini-2.5-flash')`
 - Pass `input` as prompt
 - Pass both tools in `tools` object
 - LLM decides which tool (if any) to call based on prompt
@@ -84,7 +84,7 @@ pnpm evalite main.ts
 [`solution/main.ts`](./solution/main.ts)
 
 - Fill in `generateText` call
-- Model: `google('gemini-2.0-flash-001')`
+- Model: `google('gemini-2.5-flash')`
 - Prompt: `input` (from test case)
 - Tools: `{ getWeather, calculator }` (both provided)
 - Return result directly - contains `toolCalls` array

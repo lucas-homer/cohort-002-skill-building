@@ -14,7 +14,7 @@ Inside our [`POST` route](./api/chat.ts) now, we begin with a query rewriter:
 
 ```ts
 const queryRewriterResult = await generateObject({
-  model: google('gemini-2.0-flash-001'),
+  model: google('gemini-2.5-flash'),
   system: `You are a helpful memory search assistant, able to generate effective search queries for finding relevant memories in a user's memory system.
     Your job is to generate a list of keywords and a search query which will be used to search through the user's stored memories.
     The memories contain personal information, preferences, facts, and details about the user that have been shared in previous conversations.
