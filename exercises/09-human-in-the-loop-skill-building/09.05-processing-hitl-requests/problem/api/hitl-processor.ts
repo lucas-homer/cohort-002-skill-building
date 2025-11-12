@@ -28,7 +28,7 @@ export const findDecisionsToProcess = (opts: {
     return [];
   }
 
-  // TODO: Get all the tools from the assistant message
+  // TODO: Get all the tools requiring approval from the assistant message
   // and return them in an array.
   const tools = TODO;
 
