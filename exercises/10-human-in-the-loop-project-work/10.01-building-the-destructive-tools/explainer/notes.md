@@ -122,7 +122,7 @@ if (action.type === 'send-email' && decision.approved) {
   });
 
   writer.write({
-    type: 'data-approval-end',
+    type: 'data-approval-result',
     data: {
       id: action.id,
       output: `Email sent successfully. ID: ${result.id}`,
@@ -404,7 +404,7 @@ execute: async ({ to, subject, body }, { writer }) => {
     return `Email queued for approval`;
   } catch (error) {
     writer.write({
-      type: 'data-approval-end',
+      type: 'data-approval-result',
       data: {
         id: actionId,
         output: `Error: ${error.message}`,
@@ -541,7 +541,7 @@ In HITL processor (from lesson 7), add handlers:
 for (const { action, decision } of decisionsToProcess) {
   if (!decision.approved) {
     writer.write({
-      type: 'data-approval-end',
+      type: 'data-approval-result',
       data: {
         id: action.id,
         output: `Action rejected: ${decision.feedback}`,
@@ -559,7 +559,7 @@ for (const { action, decision } of decisionsToProcess) {
         body: action.content,
       });
       writer.write({
-        type: 'data-approval-end',
+        type: 'data-approval-result',
         data: {
           id: action.id,
           output: `Email sent to ${action.to}`,
@@ -575,7 +575,7 @@ for (const { action, decision } of decisionsToProcess) {
         body: action.body,
       });
       writer.write({
-        type: 'data-approval-end',
+        type: 'data-approval-result',
         data: {
           id: action.id,
           output: `Issue created: ${issueResult.html_url}`,

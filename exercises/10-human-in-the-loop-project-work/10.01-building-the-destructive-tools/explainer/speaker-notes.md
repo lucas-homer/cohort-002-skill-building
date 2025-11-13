@@ -38,7 +38,7 @@
 
 - Tool execute = queue, not execute
 - HITL handler = switch on action.type, run service
-- Error handling with try/catch, write approval-end with error flag
+- Error handling with try/catch, write approval-result with error flag
 
 ### Implementation Pattern 2: MCP Servers
 
@@ -149,7 +149,7 @@ In HITL processor loop:
 
 - Switch on `action.type`
 - Call service for approved actions
-- Write `data-approval-end` with result/error
+- Write `data-approval-result` with result/error
 - Handle rejections with feedback
 
 ### Phase 6: Test Flows
@@ -218,7 +218,7 @@ Walk through 3 scenarios:
 **Links:** `notes.md` lines 365-391
 
 - All tools: try/catch wrapper
-- Write approval-end with error flag
+- Write approval-result with error flag
 - Re-throw for agent handling
 - Graceful failure messages
 

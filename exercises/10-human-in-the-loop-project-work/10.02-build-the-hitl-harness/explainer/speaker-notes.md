@@ -14,7 +14,7 @@
 
 [`/src/app/api/chat/route.ts`]
 
-- Extend `MyMessage` with 3 custom data parts: `approval-request`, `approval-decision`, `approval-end`
+- Extend `MyMessage` with 3 custom data parts: `approval-request`, `approval-decision`, `approval-result`
 - `Action` type: discriminated union matching tool types from 08.01 (send-email, create-github-issue, create-todo)
 - Each action type has specific fields (to/subject/content for email, repo/title/body for GitHub)
 - `ToolApprovalDecision`: approve (no data) or reject (with reason string)
@@ -54,7 +54,7 @@
 - Format text parts as-is
 - Format `approval-request`: "Assistant requested to send email: To/Subject/Content"
 - Format `approval-decision`: "User approved" or "User rejected: reason"
-- Format `approval-end`: "Action result: output message"
+- Format `approval-result`: "Action result: output message"
 - All custom parts must be readable text in diary
 
 ### Phase 6: Execute Actions in Stream
@@ -64,9 +64,9 @@
 - Inside `createUIMessageStream`, call `findDecisionsToProcess()` first
 - Clone messages array: `messagesAfterHitl = structuredClone(messages)`
 - Loop through HITL results, execute approved actions
-- Approved: call service (emailService.send, githubService.createIssue), write `data-approval-end` with success output
-- Rejected: write `data-approval-end` with cancellation message including reason
-- Append `approval-end` parts to `messagesAfterHitl` array
+- Approved: call service (emailService.send, githubService.createIssue), write `data-approval-result` with success output
+- Rejected: write `data-approval-result` with cancellation message including reason
+- Append `approval-result` parts to `messagesAfterHitl` array
 - Pass `messagesAfterHitl` to `getDiary()` so LLM sees action outcomes
 - Use `prompt: getDiary(messagesAfterHitl)` instead of `messages: convertToModelMessages()`
 
@@ -74,7 +74,7 @@
 
 - Explain HITL flow: tool call → pause → approval → result
 - List which tools require approval vs instant execution
-- Instruct: never assume success, wait for approval-end result
+- Instruct: never assume success, wait for approval-result result
 - Guide: acknowledge user decisions, adjust on rejection feedback
 - Transparent behavior: LLM knows it's waiting for human decision
 
@@ -101,7 +101,7 @@
 
 **Error handling:** HITL processor returns error if action lacks matching decision
 
-**Message cloning:** `structuredClone()` avoids mutating original array when appending approval-end parts
+**Message cloning:** `structuredClone()` avoids mutating original array when appending approval-result parts
 
 **Tool execution timing:** Deferred vs immediate - destructive tools write approval-request, safe tools execute instantly
 

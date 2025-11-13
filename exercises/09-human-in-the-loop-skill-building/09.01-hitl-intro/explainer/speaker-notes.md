@@ -38,7 +38,7 @@ Three data part types for action lifecycle:
 
 - `data-approval-request`: LLM requests to perform action
 - `data-approval-decision`: User approves/rejects with feedback
-- `data-approval-end`: Confirms action completed (after approval only)
+- `data-approval-result`: Confirms action completed (after approval only)
 
 #### Phase 4: The HITL Flow
 
@@ -47,7 +47,7 @@ Four-step process:
 1. **LLM Initiates**: Creates `data-approval-request` when wanting to act
 2. **Human Review**: System pauses, presents action for approval
 3. **User Decision**: Approve or reject via `data-approval-decision`, rejection includes feedback reason
-4. **Action Execution**: Only approved actions proceed to `data-approval-end` + execution
+4. **Action Execution**: Only approved actions proceed to `data-approval-result` + execution
 
 #### Phase 5: Building This Pattern
 

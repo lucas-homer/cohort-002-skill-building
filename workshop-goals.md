@@ -391,7 +391,7 @@
 ### [09.01 - HITL Intro](./exercises/09-human-in-the-loop-skill-building/09.01-hitl-intro/explainer/readme.md) (Explainer)
 
 - Balance LLM autonomy vs risk management through human oversight
-- Custom data parts for action lifecycle: `data-approval-request`, `data-approval-decision`, `data-approval-end`
+- Custom data parts for action lifecycle: `data-approval-request`, `data-approval-decision`, `data-approval-result`
 - Pause execution for human review before performing actions
 - User approval/rejection flow with feedback mechanism
 - Prevent LLM from executing high-impact actions without confirmation
@@ -423,18 +423,18 @@
 
 ### [09.05 - Processing HITL Requests](./exercises/09-human-in-the-loop-skill-building/09.05-processing-hitl-requests/problem/readme.md) (Problem)
 
-- Define `approval-end` custom data part with action ID and output
+- Define `approval-result` custom data part with action ID and output
 - Implement `findDecisionsToProcess` to match actions with decisions
 - Extract actions from assistant message, decisions from user message
 - Return `HITLError` if user hasn't made decision for pending action
-- Update `getDiary` to format `data-approval-end` parts for LLM consumption
+- Update `getDiary` to format `data-approval-result` parts for LLM consumption
 
 ### [09.06 - Executing HITL Requests](./exercises/09-human-in-the-loop-skill-building/09.06-executing-the-hitl-requests/problem/readme.md) (Problem)
 
 - Execute approved actions inside `createUIMessageStream` loop
-- Create `messagesAfterHitl` copy to append `data-approval-end` parts
-- Call actual `sendEmail` only on approval, write `data-approval-end` to stream
-- Handle rejection branch: record rejection in `data-approval-end` without executing
+- Create `messagesAfterHitl` copy to append `data-approval-result` parts
+- Call actual `sendEmail` only on approval, write `data-approval-result` to stream
+- Handle rejection branch: record rejection in `data-approval-result` without executing
 - Pass `messagesAfterHitl` to `getDiary` so LLM sees action outcomes
 
 ## Section 10: Human-in-the-Loop Project Work
@@ -463,13 +463,13 @@
 ### [10.02 - Build the HITL Harness](./exercises/10-human-in-the-loop-project-work/10.02-build-the-hitl-harness/explainer/notes.md) (Explainer)
 
 - Apply Section 07 HITL patterns to real assistant project
-- Define custom data parts: `approval-request`, `approval-decision`, `approval-end`
+- Define custom data parts: `approval-request`, `approval-decision`, `approval-result`
 - Modify tools from 8.1 to write actions instead of executing immediately
 - Build `findDecisionsToProcess` to match actions with decisions
 - Create frontend approval/rejection UI with feedback capture
 - Format custom parts in diary function for LLM context
 - Execute approved actions, handle rejections with user feedback
-- Use `messagesAfterHitl` with appended `approval-end` parts for LLM visibility
+- Use `messagesAfterHitl` with appended `approval-result` parts for LLM visibility
 - Track action IDs with decisions to hide buttons after submission
 - System prompt guidance on HITL behavior and action outcomes
 

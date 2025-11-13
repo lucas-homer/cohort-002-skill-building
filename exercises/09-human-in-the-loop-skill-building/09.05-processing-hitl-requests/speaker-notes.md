@@ -11,20 +11,20 @@
 
 ### Steps To Complete
 
-#### Phase 1: Declare approval-end type
+#### Phase 1: Declare approval-result type
 
 [`problem/api/chat.ts`](./problem/api/chat.ts)
 
-- Add third custom data part: `approval-end`
+- Add third custom data part: `approval-result`
 - Tracks action lifecycle: start -> decision -> end
 - Contains `toolId` and `output` object with `message` field
 - Enables diary to show completed actions
 
-#### Phase 2: Update getDiary for approval-end
+#### Phase 2: Update getDiary for approval-result
 
 [`problem/api/chat.ts`](./problem/api/chat.ts)
 
-- Add handler for `data-approval-end` part type
+- Add handler for `data-approval-result` part type
 - Return descriptive string: `The action was performed: ${part.data.output.message}`
 - Lets LLM see full action history
 
@@ -64,14 +64,14 @@
 
 [`solution/api/chat.ts`](./solution/api/chat.ts)
 
-- `approval-end` part: `{toolId: string, output: {message: string}}`
+- `approval-result` part: `{toolId: string, output: {message: string}}`
 - Simple structure, extensible for different action types
 
 #### Phase 2: Diary handling
 
 [`solution/api/chat.ts`](./solution/api/chat.ts)
 
-- Handle `data-approval-end`: return `The action was performed: ${part.data.output.message}`
+- Handle `data-approval-result`: return `The action was performed: ${part.data.output.message}`
 - Maintains conversation context for LLM
 
 #### Phase 3: Validation

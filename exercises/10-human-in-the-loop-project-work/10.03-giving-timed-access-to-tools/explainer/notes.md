@@ -121,7 +121,7 @@ if (shouldRequestApproval({ action, grantedPermissions })) {
   // Execute immediately - permission already granted
   const result = await sendEmail(action);
   writer.write({
-    type: 'data-approval-end',
+    type: 'data-approval-result',
     data: {
       actionId: action.id,
       output: { type: action.type, message: result },
@@ -131,7 +131,7 @@ if (shouldRequestApproval({ action, grantedPermissions })) {
 }
 ```
 
-**Note:** Auto-execution means HITL flow bypassed entirely. LLM still sees action outcome via `data-approval-end`.
+**Note:** Auto-execution means HITL flow bypassed entirely. LLM still sees action outcome via `data-approval-result`.
 
 ### 4. Update Frontend Approval UI
 
@@ -193,7 +193,7 @@ for (const { tool, decision } of hitlResult) {
     const result = await sendEmail(action);
 
     writer.write({
-      type: 'data-approval-end',
+      type: 'data-approval-result',
       data: {
         actionId: action.id,
         output: { type: action.type, message: result },

@@ -16,7 +16,7 @@
 [`problem/api/chat.ts`](problem/api/chat.ts)
 
 - Make `messagesAfterHitl` copy of incoming `messages`
-- Will mutate to include `data-approval-end` parts
+- Will mutate to include `data-approval-result` parts
 - LLM needs updated history to see action outputs
 
 #### Phase 2: Handle approved actions
@@ -24,7 +24,7 @@
 [`problem/api/chat.ts`](problem/api/chat.ts)
 
 - In `approve` branch: call `sendEmail()` with action details
-- Create `data-approval-end` message part (use `MyMessagePart` type)
+- Create `data-approval-result` message part (use `MyMessagePart` type)
 - `writer.write()` to sync frontend
 - Push part to last message in `messagesAfterHitl`
 
@@ -33,7 +33,7 @@
 [`problem/api/chat.ts`](problem/api/chat.ts)
 
 - In reject branch: skip email send
-- Create `data-approval-end` part with rejection reason
+- Create `data-approval-result` part with rejection reason
 - `writer.write()` to sync frontend
 - Push part to last message in `messagesAfterHitl`
 - `getDiary()` already formats rejection for LLM
@@ -63,7 +63,7 @@
 [`solution/api/chat.ts`](solution/api/chat.ts) (lines 143-168)
 
 - `sendEmail()` with `tool.to`, `tool.subject`, `tool.content`
-- Create typed `data-approval-end` part: `type: 'data-approval-end'`, includes `toolId` and output message
+- Create typed `data-approval-result` part: `type: 'data-approval-result'`, includes `toolId` and output message
 - `writer.write(messagePart)` syncs to frontend
 - Push to `messagesAfterHitl[messagesAfterHitl.length - 1]!.parts`
 
@@ -72,7 +72,7 @@
 [`solution/api/chat.ts`](solution/api/chat.ts) (lines 169-188)
 
 - Skip actual email send
-- Create `data-approval-end` part with rejection message
+- Create `data-approval-result` part with rejection message
 - Same write and push pattern as approve
 - `getDiary()` already handles formatting rejection for LLM context
 

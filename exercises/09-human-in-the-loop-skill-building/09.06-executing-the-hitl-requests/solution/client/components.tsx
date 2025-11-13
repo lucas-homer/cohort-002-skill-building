@@ -66,7 +66,7 @@ export const Message = ({
               );
             }
 
-            if (part.type === 'data-approval-end') {
+            if (part.type === 'data-approval-result') {
               return (
                 <div key={part.id} className="mb-4">
                   <h2 className="text-sm font-medium mb-1">

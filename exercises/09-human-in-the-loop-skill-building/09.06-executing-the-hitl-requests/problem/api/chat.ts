@@ -1,10 +1,12 @@
 import { google } from '@ai-sdk/google';
 import {
+  convertToModelMessages,
   createUIMessageStream,
   createUIMessageStreamResponse,
   hasToolCall,
   stepCountIs,
   streamText,
+  type ModelMessage,
   type UIMessage,
 } from 'ai';
 import z from 'zod';
@@ -44,7 +46,7 @@ export type MyMessage = UIMessage<
       toolId: string;
       decision: ToolApprovalDecision;
     };
-    'approval-end': {
+    'approval-result': {
       output: ToolRequiringApprovalOutput;
       // The original tool ID that this output is for.
       toolId: string;
@@ -52,56 +54,44 @@ export type MyMessage = UIMessage<
   }
 >;
 
-type MyMessagePart = MyMessage['parts'][number];
+const annotateMessageHistory = (
+  messages: MyMessage[],
+): ModelMessage[] => {
+  const modelMessages = convertToModelMessages<MyMessage>(
+    messages,
+    {
+      convertDataPart(part) {
+        if (part.type === 'data-approval-request') {
+          return {
+            type: 'text',
+            text: `The assistant requested to send an email: To: ${part.data.tool.to}, Subject: ${part.data.tool.subject}, Content: ${part.data.tool.content}`,
+          };
+        }
+        if (part.type === 'data-approval-decision') {
+          if (part.data.decision.type === 'approve') {
+            return {
+              type: 'text',
+              text: 'The user approved the tool.',
+            };
+          }
+          return {
+            type: 'text',
+            text: `The user rejected the tool: ${part.data.decision.reason}`,
+          };
+        }
 
-const getDiary = (messages: MyMessage[]): string => {
-  return messages
-    .map((message): string => {
-      return [
-        message.role === 'user'
-          ? '## User Message'
-          : '## Assistant Message',
-        message.parts
-          .map((part): string => {
-            if (part.type === 'text') {
-              return part.text;
-            }
+        if (part.type === 'data-approval-result') {
+          return {
+            type: 'text',
+            text: `The tool was performed: ${part.data.output.message}`,
+          };
+        }
+        return part;
+      },
+    },
+  );
 
-            if (part.type === 'data-approval-request') {
-              if (part.data.tool.type === 'send-email') {
-                return [
-                  'The assistant requested to send an email:',
-                  `To: ${part.data.tool.to}`,
-                  `Subject: ${part.data.tool.subject}`,
-                  `Content: ${part.data.tool.content}`,
-                ].join('\n');
-              }
-
-              return '';
-            }
-
-            if (part.type === 'data-approval-decision') {
-              if (part.data.decision.type === 'approve') {
-                return 'The user approved the tool.';
-              }
-
-              return `The user rejected the tool: ${part.data.decision.reason}`;
-            }
-
-            if (part.type === 'data-approval-end') {
-              if (part.data.output.type === 'send-email') {
-                return `The tool was performed: ${part.data.output.message}`;
-              }
-
-              return '';
-            }
-
-            return '';
-          })
-          .join('\n\n'),
-      ].join('\n\n');
-    })
-    .join('\n\n');
+  return modelMessages;
 };
 
 export const POST = async (req: Request): Promise<Response> => {
@@ -139,31 +129,34 @@ export const POST = async (req: Request): Promise<Response> => {
 
   const stream = createUIMessageStream<MyMessage>({
     execute: async ({ writer }) => {
-      // TODO: when we process the decisions, we'll
+      // NOTE: when we process the decisions, we'll
       // be modifying the messages to include the
-      // data-approval-end parts.
+      // data-approval-result parts.
       // This means that we'll need to make a copy of
       // the messages array, and update it.
-      const messagesAfterHitl = TODO;
+      const messagesAfterHitl = [...messages];
 
       for (const { tool, decision } of hitlResult) {
         if (decision.type === 'approve') {
           // TODO: the user has approved the tool, so
           // we should send the email!
           //
-          // TODO: we should also add a data-approval-end
+          // TODO: we should also add a data-approval-result
           // part to the messages array, and write it to
           // the frontend.
           //
           // NOTE: I've provided you with a MyMessagePart
           // above, which should prove useful.
-        } else {
-          // TODO: the user has rejected the tool, so
-          // we should write a data-approval-end part to
-          // the messages array, and write it to the
-          // frontend.
         }
       }
+
+      // NOTE: We now need to annotate the messages _after_ we've
+      // processed the decisions, since we're changing the messages
+      // array. If we don't do this, the LLM won't see the outputs
+      // of the tools that we've performed.
+      const annotatedMessages = annotateMessageHistory(
+        messagesAfterHitl,
+      );
 
       const streamTextResponse = streamText({
         model: google('gemini-2.5-flash'),
@@ -172,12 +165,7 @@ export const POST = async (req: Request): Promise<Response> => {
           You will be given a diary of the conversation so far.
           The user's name is "John Doe".
         `,
-        // TODO: instead of referring to the 'messages' (the ones
-        // we got from the frontend), we'll need to reference
-        // the 'messagesAfterHitl' array.
-        // If we don't do this, our LLM won't see the outputs
-        // of the tools that we've performed.
-        prompt: getDiary(messages),
+        prompt: annotatedMessages,
         tools: {
           sendEmail: {
             description: 'Send an email',

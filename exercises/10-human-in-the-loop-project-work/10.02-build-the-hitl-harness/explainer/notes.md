@@ -3,7 +3,7 @@
 ## Learning Goals
 
 - Apply Section 07 HITL patterns to real assistant project
-- Implement action lifecycle: `data-approval-request`, `data-approval-decision`, `data-approval-end`
+- Implement action lifecycle: `data-approval-request`, `data-approval-decision`, `data-approval-result`
 - Build approval/rejection UI for destructive actions
 - Process HITL decisions and execute approved actions
 - Format custom data parts in conversation diary for LLM context
@@ -26,7 +26,7 @@ export type MyMessage = UIMessage<
       actionId: string;
       decision: ToolApprovalDecision;
     };
-    'approval-end': {
+    'approval-result': {
       actionId: string;
       output: string;
     };
@@ -291,7 +291,7 @@ function getDiary(messages: MyMessage[]): string {
               : `User rejected: ${decision.reason}`;
           }
 
-          if (part.type === 'data-approval-end') {
+          if (part.type === 'data-approval-result') {
             return `Action result: ${part.data.output}`;
           }
 
@@ -329,7 +329,7 @@ const stream = createUIMessageStream<MyMessage>({
       throw new Error(hitlResult.message);
     }
 
-    // Copy messages array to append approval-end parts
+    // Copy messages array to append approval-result parts
     const messagesAfterHitl = structuredClone(messages);
 
     // Execute approved actions
@@ -348,7 +348,7 @@ const stream = createUIMessageStream<MyMessage>({
         // Handle other action types...
 
         const actionEndPart = {
-          type: 'data-approval-end' as const,
+          type: 'data-approval-result' as const,
           data: { actionId: action.id, output },
         };
 
@@ -358,7 +358,7 @@ const stream = createUIMessageStream<MyMessage>({
         ]!.parts.push(actionEndPart);
       } else {
         const actionEndPart = {
-          type: 'data-approval-end' as const,
+          type: 'data-approval-result' as const,
           data: {
             actionId: action.id,
             output: `Action cancelled: ${decision.reason}`,
@@ -388,7 +388,7 @@ const stream = createUIMessageStream<MyMessage>({
 });
 ```
 
-**Critical:** Use `messagesAfterHitl` (with `approval-end` parts) in `getDiary()`. LLM must see action outcomes.
+**Critical:** Use `messagesAfterHitl` (with `approval-result` parts) in `getDiary()`. LLM must see action outcomes.
 
 ### 7. Update System Prompt
 
@@ -403,7 +403,7 @@ When user requests destructive action:
 3. If approved: action executes, you see result
 4. If rejected: you see feedback, adjust approach
 
-Never assume action succeeded. Wait for approval-end result.
+Never assume action succeeded. Wait for approval-result result.
 
 Available tools:
 - sendEmail: requires approval
@@ -438,13 +438,13 @@ User: "Send reminder about TPS reports"
 
 **Note:** Agent sees rejection reason in diary. Can ask clarifying questions.
 
-### 9. Render `data-approval-end` Parts (Optional Polish)
+### 9. Render `data-approval-result` Parts (Optional Polish)
 
 Show execution results in UI:
 
 ```typescript
 {
-  part.type === "data-approval-end" && (
+  part.type === "data-approval-result" && (
     <div className="text-green-500 text-sm">
       ✓ {part.data.output}
     </div>
@@ -460,7 +460,7 @@ Makes action completion visible to user.
 
 **Error handling:** HITL processor must return error if action has no matching decision. Prevents action execution without approval.
 
-**Message cloning:** Use `structuredClone()` to avoid mutating original messages array. Append `approval-end` parts to copy.
+**Message cloning:** Use `structuredClone()` to avoid mutating original messages array. Append `approval-result` parts to copy.
 
 **Tool execution:** Move from immediate execution (lesson 08.01) to deferred execution (this lesson). Tools write approval-request, execution happens after approval.
 

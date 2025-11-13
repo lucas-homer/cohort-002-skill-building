@@ -45,10 +45,10 @@
 
 - Load chat's `grantedPermissions` at request start
 - Check: tool in granted list?
-- If granted: execute immediately, write `data-approval-end`, skip HITL
+- If granted: execute immediately, write `data-approval-result`, skip HITL
 - If not granted: write `data-approval-request`, wait for decision
 - `shouldRequestApproval()` helper: maps action type to tool name, checks list
-- LLM sees outcome either way via `approval-end` part
+- LLM sees outcome either way via `approval-result` part
 
 ### Phase 5: Frontend Approval UI
 
@@ -65,7 +65,7 @@
 [HITL decision processor]
 
 - Execute action on approval or approve-for-thread
-- Write `data-approval-end` with result
+- Write `data-approval-result` with result
 - If `approve-for-thread`: call `grantToolPermission(chatId, toolName)`
 - Permission persisted to file system immediately
 - Next tool call same type auto-executes without UI prompt

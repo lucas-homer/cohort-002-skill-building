@@ -69,7 +69,10 @@ export const Message = ({
               );
             }
 
-            if (part.type === 'data-approval-end') {
+            // NOTE: We've added some rendering logic for the
+            // data-approval-result part, so that we can show
+            // the output of the tool.
+            if (part.type === 'data-approval-result') {
               return (
                 <div key={part.id} className="mb-4">
                   <h2 className="text-sm font-medium mb-1">
@@ -81,10 +84,6 @@ export const Message = ({
                 </div>
               );
             }
-
-            // TODO: write a case for data-approval-end
-            // and return a bit of UI that shows the
-            // output of the tool.
 
             if (part.type === 'data-approval-request') {
               const hasDecisionBeenMade =
