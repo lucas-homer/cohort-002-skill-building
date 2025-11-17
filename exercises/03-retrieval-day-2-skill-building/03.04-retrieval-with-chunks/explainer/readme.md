@@ -1,3 +1,7 @@
+You've built a solid chunking and retrieval setup, but it's time to put it to the test. The quality of your chunks directly impacts how well your search results perform.
+
+In this exercise, you'll explore how different retrieval methods—BM25 for keyword matching, semantic search for meaning, and RRF for combining both—rank the same chunks differently. You'll also experiment with chunk sizes to find the sweet spot for your use case.
+
 ## Steps To Complete
 
 ### Testing Retrieval Methods

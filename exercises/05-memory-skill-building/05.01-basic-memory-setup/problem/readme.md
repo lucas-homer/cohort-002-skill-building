@@ -1,3 +1,9 @@
+Personal assistants need to truly understand who you are. They need to know your preferences, habits, and important details about your life. An LLM system that learns and retains this information is a long-term goal for many AI applications.
+
+The [AI SDK](https://sdk.vercel.ai/) provides all the primitives you need to build a memory system. However, the real challenge is in the implementation details. Let's start with a simple memory setup that loads existing memories and extracts new ones from conversations.
+
+In this exercise, you'll build the foundational pieces: loading memories from a database, displaying them to the model, and extracting new permanent memories from each conversation.
+
 ## Steps To Complete
 
 - [ ] Understand that building a personal assistant requires a memory system to learn user preferences and information over time

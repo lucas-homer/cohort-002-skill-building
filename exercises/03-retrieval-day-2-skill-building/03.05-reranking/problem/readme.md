@@ -1,3 +1,9 @@
+When you're retrieving search results, you face a tricky balance. Take too many chunks and you'll load your LLM with irrelevant information. Take too few and you might miss the answer entirely.
+
+Reranking solves this problem by using an LLM to filter results. You pass a larger set of search results (like 30 chunks) to a reranking model, which evaluates them against your query and returns only the truly relevant ones.
+
+This two-step process (retrieve broadly, then filter intelligently) gives you the best of both worlds: comprehensive coverage without the noise.
+
 ## Steps To Complete
 
 ### Understanding Reranking

@@ -1,3 +1,9 @@
+Chunking is how we break large documents into smaller, manageable pieces for AI systems. But here's the thing - there's no one-size-fits-all approach.
+
+Different documents need different chunking strategies. A technical book requires different handling than a blog post or an email thread. The key is understanding how to split content so that each chunk remains useful and searchable for an LLM.
+
+In this exercise, you'll explore the most straightforward chunking approach: fixed-size token chunking. You'll experiment with a real TypeScript book, adjust parameters, and see how your choices affect what the AI system actually receives.
+
 ## Steps To Complete
 
 ### Understanding Chunking

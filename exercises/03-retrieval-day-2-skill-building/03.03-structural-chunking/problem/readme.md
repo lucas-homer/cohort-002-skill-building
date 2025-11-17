@@ -1,11 +1,12 @@
+Fixed-size chunks are simple, but they don't respect a document's structure. They can split important content apart and miss natural boundaries like headings and sections.
+
+A smarter approach is to use **structural chunking** — splitting documents at meaningful delimiters like headings, chapter markers, and code blocks. This keeps related information together and makes chunks more searchable and useful for retrieval systems.
+
+LangChain's `RecursiveCharacterTextSplitter` makes this possible by letting you define separators where splits are allowed, and it tries them in order until it finds the right breaking point.
+
 ## Steps To Complete
 
 ### Understanding Structural Chunking
-
-- [ ] Understand that structural chunking respects the internal structure of documents
-  - Fixed size chunking splits text arbitrarily without considering section headers or document organization
-  - Structural chunking uses separators to split documents at meaningful boundaries like headings, code blocks, and chapter markers
-  - This groups related information together and creates more semantically coherent chunks
 
 - [ ] Review the `RecursiveCharacterTextSplitter` from LangChain
   - `chunkSize` and `chunkOverlap` refer to numbers of characters instead of tokens
