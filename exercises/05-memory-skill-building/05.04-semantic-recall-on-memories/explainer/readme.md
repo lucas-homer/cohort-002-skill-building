@@ -1,108 +1,111 @@
-Our final step here, now that we've implemented updating, deleting and adding memories, is to improve the way that we load memories.
+Our memory system is growing, but we've hit a critical problem. We're loading _every single memory_ into the LLM, regardless of whether it's relevant to the current conversation. This is inefficient and will quickly become a bottleneck as memory databases grow larger.
 
-Our current implementation loads the entire memory database into the LLM. This is practical in the short-term, but will eventually hit a wall as our memory system grows.
+Think about it: if you're asking about your favorite drinks, you don't need memories about your childhood hometown cluttering up the context. You need the system to be smart about which memories matter _right now_.
 
-Instead, we should be able to quickly retrieve the most relevant memories for the current situation.
+This is where retrieval comes back into play. Just like we learned earlier, we need to search through our memories semantically and return only the most relevant ones.
 
-Guess what? We already know everything we need to implement this. In this workshop, we've built a complex retrieval mechanism using BM25 and using Semantic Search.
+## Steps To Complete
 
-So I figure I'd show you the combination of the two systems as an explainer.
+### Understanding The Problem With Loading All Memories
 
-## The Query Rewriter
+- [ ] Review how the previous approach loaded memories
+  - The old system used `loadMemories()` which fetches every single memory from the database
+  - All memories were added to the system prompt, regardless of relevance
 
-Inside our [`POST` route](./api/chat.ts) now, we begin with a query rewriter:
+- [ ] Consider the scalability issue
+  - As the memory database grows to hundreds or thousands of items, passing all of them to the LLM becomes wasteful
+  - This pollutes the context window with irrelevant information
+
+### How Query Rewriting Works
+
+- [ ] Look at the query rewriter in `api/chat.ts`
 
 ```ts
 const queryRewriterResult = await generateObject({
   model: google('gemini-2.5-flash'),
-  system: `You are a helpful memory search assistant, able to generate effective search queries for finding relevant memories in a user's memory system.
-    Your job is to generate a list of keywords and a search query which will be used to search through the user's stored memories.
-    The memories contain personal information, preferences, facts, and details about the user that have been shared in previous conversations.
-  `,
+  system: `You are a helpful memory search assistant...`,
   schema: z.object({
     keywords: z
       .array(z.string())
       .describe(
-        "A list of keywords to search the user's memories with. Use these for exact terminology and specific terms mentioned in the conversation.",
+        "A list of keywords to search the user's memories with...",
       ),
     searchQuery: z
       .string()
       .describe(
-        "A search query which will be used to search the user's memories. Use this for broader semantic search terms that capture the intent and context of the conversation.",
+        "A search query which will be used to search the user's memories...",
       ),
   }),
-  prompt: `
-    Conversation history:
-    ${formatMessageHistory(messages)}
-  `,
-});
-```
-
-This generates a list of keywords and a search query. The keywords and search query get passed into a [`searchMemories` function](./api/search.ts), which loads all memories and uses both embeddings and BM25 search:
-
-```ts
-const allMemories = await searchMemories({
-  searchQuery: queryRewriterResult.object.searchQuery,
-  keywordsForBM25: queryRewriterResult.object.keywords,
-});
-```
-
-We then merge the results together with Reciprocal Rank Fusion, slice off the top 10 memories, and format them using our [`formatMemory` utility](./api/utils.ts):
-
-```ts
-const formattedMemories = allMemories
-  .slice(0, 10)
-  .map((memory) => formatMemory(memory.memory))
-  .join('\n\n');
-```
-
-These formatted memories are then passed into our system prompt:
-
-```ts
-const result = streamText({
-  model: google('gemini-2.0-flash-lite'),
-  system: `You are a helpful assistant that can answer questions and help with tasks.
-
-  The date is ${new Date().toISOString().split('T')[0]}.
-
-  You have access to the following memories:
-
-  <memories>
-  ${formattedMemories}
-  </memories>
-  `,
   messages: convertToModelMessages(messages),
 });
 ```
 
-When we're saving memories, we're also creating an embedding, using the [`embedMemory` function](./api/embeddings.ts):
+- [ ] Understand what the query rewriter does
+  - It analyzes the conversation history to understand what information the user is asking about
+  - It generates `keywords` for exact keyword matching (used by BM25 search)
+  - It generates a `searchQuery` for semantic/embedding-based search
+
+### How Hybrid Search Retrieves Memories
+
+- [ ] Examine how the results are retrieved in `api/chat.ts`
 
 ```ts
-saveMemories(
-  await Promise.all(
-    additions.map(async (addition) => ({
-      id: generateId(),
-      memory: addition,
-      createdAt: new Date().toISOString(),
-      embedding: await embedMemory(addition),
-    })),
-  ),
-);
+const foundMemories = await searchMemories({
+  searchQuery: queryRewriterResult.object.searchQuery,
+  keywordsForBM25: queryRewriterResult.object.keywords,
+});
+
+const formattedMemories = foundMemories
+  .slice(0, 4)
+  .map((memory) => formatMemory(memory.memory))
+  .join('\n\n');
 ```
 
-The [`saveMemories` function](./api/memory-persistence.ts) handles storing these memories with their embeddings.
+- [ ] Notice how `searchMemories()` combines two retrieval methods
+  - It searches using embeddings for semantic similarity
+  - It searches using BM25 for keyword matching
+  - It uses reciprocal rank fusion to combine the results
 
-Since memories are pretty small, you could probably fetch up to 30, 40, 50 without impacting context too much.
+- [ ] See how only the top 4 memories are used
+  - The `.slice(0, 4)` ensures we don't bloat the context window
+  - These are the most relevant memories for the current query
 
-Try running the exercise locally, getting into conversation with the LLM, seeing what memories get pulled out and using console logs to check on the memories that are being loaded.
+### Testing The Selective Retrieval
 
-## Steps To Complete
+- [ ] Run the application with `pnpm run dev`
 
-- [ ] Review the query rewriter implementation that generates keywords and search queries.
-  - [ ] Understand how the `searchMemories` function works with both embeddings and BM25.
-  - [ ] Observe how Reciprocal Rank Fusion merges search results.
-  - [ ] Examine how top memories are formatted and passed to the LLM.
+- [ ] Open `localhost:3000` in your browser
 
-- [ ] Test the system by running conversations and checking console logs.
+- [ ] Start with the pre-filled prompt: "Interview me about my life and work. Ask one question at a time."
 
-- [ ] Review how embeddings are created and stored with memories
+- [ ] Answer several questions to build up memories
+
+- [ ] Ask a specific follow-up question like "What do I like drinking?"
+  - Look at the server console to see the query rewriter output
+
+```txt
+{
+  keywords: [ 'drink', 'drinks', 'favorite', 'beverage', 'prefer' ],
+  searchQuery: 'information about user\'s drinks and beverages'
+}
+```
+
+- [ ] Observe which memories appear in the context
+  - Only memories related to drinks and beverages should be retrieved
+  - Unrelated memories about your location or work are filtered out
+
+### Understanding The Pattern
+
+- [ ] Recognize that this is a common pattern in memory systems
+  - As memory databases grow larger, selective retrieval becomes essential
+  - Every memory system needs a way to winnow down which information reaches the LLM
+
+- [ ] Consider why this matters
+  - Prevents context pollution from irrelevant information
+  - Scales better as the memory database grows
+  - Focuses the LLM's attention on what actually matters for the current conversation
+
+- [ ] Explore how this could be extended
+  - A re-ranking step could further refine the results
+  - Multiple retrieval methods could run in parallel
+  - Different weighting could be applied to different memory types

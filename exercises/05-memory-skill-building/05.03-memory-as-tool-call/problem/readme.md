@@ -1,120 +1,120 @@
-In the previous exercise, memory creation happened automatically after every conversation turn via the `onFinish` callback. This approach works, but it's inefficient - we're calling `generateObject` even when there's nothing new to memorize.
+Our previous memory setup was a bit wasteful. Every time the conversation finished streaming, we'd automatically extract memories by calling `generateObject`. This meant the LLM couldn't decide when memories actually needed updating.
 
-In this exercise, we'll convert memory management into a **tool call** that the agent can choose to invoke only when necessary.
+What if we let the LLM decide for itself? We can use a tool call loop to give the model control over when to update memories. When users share personal information, contradict previous details, or ask to remember something, the model can call a `manageMemories` tool.
 
-## The Problem With Automatic Memory Creation
-
-Our current approach (from 03.03) uses `createUIMessageStream` with an `onFinish` callback:
-
-```ts
-const stream = createUIMessageStream<MyMessage>({
-  execute: async ({ writer }) => {
-    // Stream response...
-  },
-  onFinish: async (response) => {
-    // This runs EVERY TIME, even for "Hello" or "What's the weather?"
-    const memoriesResult = await generateObject({...});
-  },
-});
-```
-
-Problems:
-
-- Runs after EVERY conversation turn regardless of content
-- Wastes tokens analyzing trivial conversations
-- No agent control over when to memorize
-- Less semantic/intentional memory creation
-
-## The Solution: Memory as a Tool
-
-Instead of automatic callbacks, we give the agent a `manageMemories` tool it can call when appropriate:
-
-```ts
-const result = streamText({
-  model: google('gemini-2.0-flash-lite'),
-  system: `... instructions about when to use manageMemories ...`,
-  messages: convertToModelMessages(messages),
-  tools: {
-    manageMemories: tool({
-      description: '...',
-      inputSchema: z.object({ updates, deletions, additions }),
-      execute: async ({ updates, deletions, additions }) => {
-        // Perform memory operations
-      },
-    }),
-  },
-  stopWhen: stepCountIs(5), // Allow up to 5 generation steps
-});
-```
-
-Benefits:
-
-- Agent decides when memory update needed
-- More efficient token usage
-- Can skip trivial conversations
-- Can batch multiple turns before memorizing
-- More transparent (tool calls visible in UI)
-
-## Your Task
-
-Looking at [`api/chat.ts`](./api/chat.ts), you'll see we've already switched from `createUIMessageStream` to `streamText`, and added system prompt guidance about when to use the tool.
-
-You need to:
-
-1. **Define the `manageMemories` tool**
-   - Use the `tool()` function from AI SDK
-   - Define parameters schema matching 03.03 structure (updates, deletions, additions)
-   - Write clear description telling agent when to call it
-
-2. **Implement the execute function**
-   - Perform actual memory operations (update, delete, save)
-   - Add console logging to see when tool is called
-   - Return success message
-
-3. **Set `stopWhen`**
-   - Use `stepCountIs()` to allow agent to call tools during streaming
-   - Typical value: `stepCountIs(5)` for up to 5 generation steps
-
-## Testing
-
-After implementation, test with:
-
-1. **Casual conversation** - Agent should NOT call tool
-   - "Hi, how are you?"
-   - "What's the weather like?"
-
-2. **Personal information** - Agent SHOULD call tool
-   - "I prefer dark mode interfaces"
-   - "My dog's name is Max"
-
-3. **Contradictions** - Agent should use updates field
-   - First: "I love coffee"
-   - Later: "Actually, I prefer tea now"
-
-4. **Batching** - Agent might wait before calling
-   - Multiple facts in one turn
-   - Or wait until conversation naturally ends
-
-Watch console logs to see when `manageMemories` is invoked vs skipped.
+This is more efficient and gives the agent better judgment about what's actually worth remembering.
 
 ## Steps To Complete
 
-- [ ] Define the `manageMemories` tool with proper schema
-  - [ ] Use `tool()` function from AI SDK
-  - [ ] Define `updates`, `deletions`, `additions` parameters with descriptions
-  - [ ] Write tool description explaining when to call it
+### Setting Up The Memory Management Tool
 
-- [ ] Implement the execute function
-  - [ ] Filter deletions that are being updated (avoid conflicts)
-  - [ ] Call `updateMemory()` for each update
-  - [ ] Call `deleteMemory()` for filtered deletions
-  - [ ] Call `saveMemories()` with new memory objects
-  - [ ] Add console logging
-  - [ ] Return success object with message
+- [ ] Open `api/chat.ts` and locate the `tools` object in the `streamText` call
+  - You'll see a TODO comment where the `manageMemories` tool should be defined
+  - This tool needs to handle three operations: updates, deletions, and additions
 
-- [ ] Set `stopWhen` with `stepCountIs(5)` to allow tool calling
+- [ ] Create the `manageMemories` tool using the `tool()` function
 
-- [ ] Test with different conversation types
-  - [ ] Verify tool is skipped for small talk
-  - [ ] Verify tool is called when sharing personal info
-  - [ ] Check updates work for contradictions
+```ts
+// TODO: Add the manageMemories tool
+// The tool should have three parameters:
+// - updates: array of objects with { id: string, memory: string }
+// - deletions: array of strings (memory IDs to delete)
+// - additions: array of strings (new memories to add)
+// In the execute function, perform the actual memory operations
+tools: {
+  manageMemories: TODO,
+},
+```
+
+- [ ] Implement the `execute` function for the tool
+  - Filter out deletions that are being updated (to avoid conflicts)
+  - Call `updateMemory()` for each update
+  - Call `deleteMemory()` for each deletion
+  - Call `saveMemories()` for each addition, creating memory objects with `id`, `memory`, and `createdAt` fields
+
+```ts
+execute: async ({ updates, deletions, additions }) => {
+  // TODO: Perform the actual memory operations
+  // Handle updates, deletions, and additions
+
+  // TODO: Return a success message
+  return TODO;
+},
+```
+
+### Enabling Tool Calling With stopWhen
+
+- [ ] Locate the TODO comment for `stopWhen` in the `streamText` call
+  - This controls when the model stops generating and how many tool calls it can make
+
+- [ ] Add a stop condition using `stepCountIs(5)`
+  - This allows up to 5 generation steps, giving the model room to call tools multiple times if needed
+
+```ts
+// TODO: Add stopWhen with stepCountIs to allow the agent to call tools
+// Use stepCountIs(5) to allow up to 5 generation steps
+stopWhen: TODO,
+```
+
+### Improving The System Prompt
+
+- [ ] Review the system prompt in the `streamText` call
+  - Currently it loads memories but doesn't guide the model on when to use the tool
+
+- [ ] Enhance the system prompt with guidance for tool usage
+  - Add instructions for when the model should call `manageMemories`
+  - Explain what counts as personal information worth remembering versus casual conversation
+  - Suggest that the model can batch multiple turns before calling the tool
+
+The system prompt should include directives like:
+
+- When to call the tool (user shares personal info, contradicts previous statements, asks to remember/forget)
+- When to skip the tool (casual small talk, temporary questions)
+- That batching multiple conversation turns is acceptable
+
+```ts
+system: `
+TODO: Add guidelines for when to use the tool and when to skip it
+`,
+```
+
+### Testing The Tool-Based Memory System
+
+- [ ] Run the application with `pnpm run dev`
+
+- [ ] Open `localhost:3000` in your browser
+  - The chat interface will load with the pre-filled message
+
+- [ ] Start a conversation by sending "Interview me about my life and work. Ask one question at a time."
+  - The model will begin asking questions
+
+- [ ] Answer with personal information in your responses
+  - Share details about your job, hobbies, preferences, or experiences
+
+- [ ] Check the server console for tool call logs
+  - Look for output showing when `manageMemories` is being called
+  - You should see which memories are being added, updated, or deleted
+
+```txt
+Memory tool called:
+Updates: []
+Deletions: []
+Additions: [
+  'User works in software development',
+  'User has a dog named Max',
+  'User enjoys hiking on weekends'
+]
+```
+
+- [ ] Inspect the `data/memories.local.json` file after several exchanges
+  - Verify that memories are being persisted correctly
+  - Check that the memories reflect the information you shared
+
+- [ ] Test the update functionality by contradicting yourself
+  - If you mentioned "I like coffee" earlier, later say "Actually, I prefer tea"
+  - The model should call the tool with an update operation
+
+- [ ] Verify memory persistence across sessions
+  - Close and reopen the chat
+  - Start a new conversation and mention something related to previous memories
+  - The model should reference the remembered information in its responses
