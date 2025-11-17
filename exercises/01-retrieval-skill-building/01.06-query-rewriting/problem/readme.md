@@ -1,45 +1,18 @@
-Our setup is working relatively well, but there's an optimization that I've spotted that will really make a big difference. Our system is lacking a query rewriter.
+## Steps To Complete
 
-## Query Rewriting
+### Implementing Query Rewriting
 
-A query rewriter takes the user's query (in our case, a conversation history) and makes a more specific query out of it that we can then use to query our corpus with. It's something that happens before retrieval, and it's used to optimize the retrieval.
+- [ ] Understand that query rewriting transforms user input into optimized queries for different search algorithms
+  - BM25 works best with specific keywords and exact terminology
+  - Semantic search works better with broader, more conceptual queries
+  - The same user question needs to be rewritten differently for each search method
 
-```txt
-┌───────────────────────┐      ┌─────────────────┐      ┌───────────────┐
-│                       │      │                 │      │               │
-│  Conversation History │──────►  Query Rewriter │──────►  Refined Query│
-│  "What did David say  │      │     (LLM)       │      │ "mortgage     │
-│   about the mortgage? │      │                 │      │  application  │
-│   I need to find that │      │                 │      │  David status"│
-│   email..."           │      │                 │      │               │
-│                       │      │                 │      │               │
-└───────────────────────┘      └─────────────────┘      └───────┬───────┘
-                                                                │
-                                                                │
-                                                                ▼
-┌────────────────────────┐     ┌────────────────────┐     ┌────────────────┐
-│                        │     │                    │     │                │
-│  Retrieved Emails      │◄────┤  Vector Database/  │◄────┤  Embedding     │
-│  from Corpus           │     │  Search System     │     │  Model         │
-│                        │     │                    │     │                │
-└────────────────────────┘     └────────────────────┘     └────────────────┘
-```
-
-## The Problem
-
-The problem in our current setup is that we're embedding the entire conversation history, and then using that to search the corpus.
-
-The reason that's an issue is that as the conversation gets longer, the embedding gets bigger and bigger, and the stuff towards the end (the most relevant part to the actual user's question) will start to have less impact on what gets returned from the corpus.
-
-This will be especially dramatic if there's a sudden turn in conversation. Let's say we have a conversation history that's 9 messages long, all about mortgage applications. Then the user asks a single question about booking confirmations. The embedding we create will be 9/10 about mortgages, and 1/10 about bookings.
-
-We need to take that massive conversation history, pass it to an LLM, and then get it to make a refined search query that we can use to fetch the most relevant emails. That's what query rewriters do - they rewrite big queries into smaller, more focused ones.
-
-## Our BM25 Keyword Search
-
-We are already doing some of this with our BM25. BM25 requires a list of keywords that you then search the corpus with.
+- [ ] Navigate to `api/chat.ts` and locate the `generateObject` call with the TODO comment
 
 ```ts
+// TODO: Change the generateObject call so that it generates a search query in
+// addition to the keywords. This will be used for semantic search, which will be a
+// big improvement over passing the entire conversation history.
 const keywords = await generateObject({
   model: google('gemini-2.5-flash'),
   system: `You are a helpful email assistant, able to search emails for information.
@@ -52,49 +25,75 @@ const keywords = await generateObject({
         'A list of keywords to search the emails with. Use these for exact terminology.',
       ),
   }),
-  prompt: `
-    Conversation history:
-    ${formatMessageHistory(messages)}
-  `,
+  messages: convertToModelMessages(messages),
 });
 ```
 
-## The Solution
+- [ ] Update the system prompt to explain that the LLM should generate both keywords and a search query
+  - Add information about generating a search query for semantic search
+  - Explain that the search query can be more general than the keywords
 
-All we need to do is add an extra bit of code into this `generateObject` call, which will also return a search query. We'll need to do a little bit of prompt engineering to describe what the use case is - basically just say this thing's going to be used for semantic search.
+- [ ] Add a `searchQuery` field to the schema object
 
 ```ts
-// In chat.ts
-// TODO: Generate a search query based on the conversation history
-// This will be used for semantic search, which will be a big
-// improvement over passing the entire conversation history.
-const searchQuery = TODO;
+schema: z.object({
+  keywords: z
+    .array(z.string())
+    .describe(
+      'A list of keywords to search the emails with. Use these for exact terminology.',
+    ),
+  // Add searchQuery field here
+}),
 ```
 
-This isn't a terribly difficult job. We just need to take the keyword writer we've already got and add something that makes sure we're doing it for the embeddings as well as for the BM25.
+- [ ] Use `z.string()` to define the `searchQuery` field type
 
-Good luck, and I will see you in the solution.
+- [ ] Add a `.describe()` call to explain that this query will be used for semantic search and can use broader terms
 
-## Steps To Complete
+- [ ] Locate the `searchEmails` function call in `api/chat.ts`
 
-- [ ] Modify the `generateObject` schema in `problem/api/chat.ts` to include a field for the search query
+```ts
+const searchResults = await searchEmails({
+  keywordsForBM25: keywords.object.keywords,
+  embeddingsQuery: TODO,
+});
+```
 
-- [ ] Update the system prompt to explain that the search query will be used for semantic search
+- [ ] Pass `keywords.object.searchQuery` as the `embeddingsQuery` parameter
+  - This sends the generated search query to the semantic search algorithm
+  - The keywords will be used for BM25, while the search query will be used for embeddings
 
-- [ ] Add a description to the search query field in the schema
+### Testing Your Implementation
 
-- [ ] Replace the `TODO` to use the generated search query
+- [ ] Run the application using `pnpm run dev`
+  - Wait for "Embedding Emails" and "Embedding complete" messages
+  - The server will start on localhost:3000
 
-- [ ] Test your implementation by running the dev server and asking questions about emails
+- [ ] Open your browser to `localhost:3000`
 
-- [ ] Check the console logs to see the generated keywords and search query
+- [ ] Test with the default query "What did David say about the mortgage application?"
 
-- [ ] Verify that the search results are more relevant to your current question
+- [ ] Check the browser console to see the generated keywords and search query
+  - Look for the logged `keywords.object` which will show both fields
+  - Verify that the keywords are specific terms from the conversation
+  - Verify that the search query is a broader, more semantic version
 
-- [ ] Try asking follow-up questions to test how well the system handles conversation context
+- [ ] Check which email IDs were returned in the console
+  - The top 5 results should be relevant to David and mortgage applications
+  - The combination of BM25 and semantic search should provide better results than either alone
 
-## Crash Course Links
+- [ ] Try different queries to test the query rewriting
+  - Try "What properties was Sarah interested in?"
+  - Try "Tell me about the house hunting process"
+  - Observe how the LLM generates different keywords versus search queries for each
 
-- [01.09 - Streaming Objects](../../../../../internal/LESSON_LEARNINGS.md#0109---streaming-objects) - `generateObject()` with schema
-- [05.02 - Basic Prompting](../../../../../internal/LESSON_LEARNINGS.md#0502---basic-prompting) - Prompt engineering fundamentals
-- [05.01 - The Template](../../../../../internal/LESSON_LEARNINGS.md#0501---the-template) - Structuring prompts effectively
+- [ ] Add a console log to see the difference between keywords and search query
+
+```ts
+console.log('Keywords:', keywords.object.keywords);
+console.log('Search Query:', keywords.object.searchQuery);
+```
+
+- [ ] Verify that the AI assistant answers questions accurately using the retrieved emails
+  - Check that sources are cited using markdown links to email subjects
+  - Confirm that the answers are based on the retrieved email content

@@ -1,29 +1,14 @@
-In the previous exercise, we looked at BM25 as a technique for retrieving documents. While it works fine with keywords, it has limitations. What we ideally want is to take the conversation history and use the LLM's knowledge to figure out what emails are relevant.
+## Steps To Complete
 
-This might sound impossible, but it exists - it's called semantic search, and it works via embeddings.
+### Creating And Scoring Embeddings
 
-## Semantic Search
+- [ ] Understand that BM25 is keyword-based matching while embeddings capture semantic meaning
+  - BM25 matches exact keywords like "total solar eclipse" with "total solar eclipse"
+  - Embeddings can match "sun blocked by moon" with "total solar eclipse" because they understand the semantic similarity
 
-An embedding is an LLM's understanding of what a word, phrase, or document means. It's represented as an array of numbers that captures the semantic meaning of text.
+- [ ] Review the [Embeddings Overview](https://ai-sdk.dev/docs/ai-sdk-core/embeddings) to understand how embeddings work in the AI SDK
 
-You can then compare embeddings against each other to check their relevance. And by doing that, you can find the most relevant emails for a given query.
-
-Our process will work like this:
-
-1. Create embeddings for all emails in your corpus
-2. Create an embedding for your query (conversation history)
-3. Compare the query embedding against all email embeddings
-4. Rank emails by how similar they are (`cosineSimilarity`)
-
-This gives us a more sophisticated search algorithm that leverages the LLM's own understanding of text to find related patterns.
-
-The AI SDK provides helpful functions like [`embed`](https://ai-sdk.dev/docs/reference/ai-sdk-core/embed) and [`embedMany`](https://ai-sdk.dev/docs/reference/ai-sdk-core/embed-many), and allows us to use embedding models with `google.textEmbeddingModel`.
-
-## The Problem
-
-In [`create-embeddings.ts`](./api/create-embeddings.ts), there are three functions we need to implement:
-
-First, we need to implement `embedLotsOfText`. This function will take a list of emails and return a list of embeddings for each email.
+- [ ] Navigate to `api/create-embeddings.ts` and locate the `embedLotsOfText` function
 
 ```ts
 const embedLotsOfText = async (
@@ -39,7 +24,14 @@ const embedLotsOfText = async (
 };
 ```
 
-Then, we need to implement `embedOnePieceOfText`:
+- [ ] Use the [`embedMany`](https://ai-sdk.dev/docs/reference/ai-sdk-core/embed-many) function from the AI SDK to create embeddings for multiple emails at once
+  - Pass `myEmbeddingModel` as the model parameter (feel free to choose a different model)
+  - Pass an array of strings as the `values` parameter - combine each email's `subject` and `body` fields
+  - Set `maxRetries` to `0` (this will let us know early if the embedding fails)
+
+- [ ] Map the results to return an array of objects containing each email's `id` and its `embedding`. This will be used to lookup the embedding for each email later.
+
+- [ ] Locate the `embedOnePieceOfText` function in `api/create-embeddings.ts`
 
 ```ts
 const embedOnePieceOfText = async (
@@ -49,76 +41,72 @@ const embedOnePieceOfText = async (
 };
 ```
 
-And finally, `calculateScore`. The [`cosineSimilarity`](https://ai-sdk.dev/docs/reference/ai-sdk-core/cosine-similarity) function from `ai` will be very helpful here.
+- [ ] Use the [`embed`](https://ai-sdk.dev/docs/reference/ai-sdk-core/embed) function from the AI SDK to create an embedding for a single piece of text
+  - Pass `myEmbeddingModel` as the model parameter
+  - Pass the `text` parameter as the `value`
+  - Return the `embedding` from the result
+
+- [ ] Locate the `calculateScore` function in `api/create-embeddings.ts`
 
 ```ts
 const calculateScore = (
   queryEmbedding: number[],
   embedding: number[],
 ): number => {
-  // TODO: Implement this function by using the cosineSimilarity function from 'ai'
+  // TODO: Implement this function by using the cosineSimilarity function
 };
 ```
 
-The `searchEmails` function uses these implementations to take a query, create an embedding from it, and calculate scores by comparing it against email embeddings.
+- [ ] Use the [`cosineSimilarity`](https://ai-sdk.dev/docs/reference/ai-sdk-core/cosine-similarity) function from the AI SDK to compare the two embeddings
+  - Pass `queryEmbedding` as the first parameter
+  - Pass `embedding` as the second parameter
+  - Return the similarity score from the result
 
-## The `/api/chat` Endpoint
+### Integrating Into Chat
 
-Once those are implemented, we need to update the chat route. In [`chat.ts`](./api/chat.ts), we need to modify this section:
+- [ ] Navigate to `api/chat.ts` and locate the first TODO comment
 
 ```ts
-export const POST = async (req: Request): Promise<Response> => {
-  const body: { messages: UIMessage[] } = await req.json();
-  const { messages } = body;
-
-  const stream = createUIMessageStream({
-    execute: async ({ writer }) => {
-      // TODO: call the searchEmails function with the
-      // conversation history to get the search results
-      const searchResults = TODO;
-
-      // TODO: take the top X search results
-      const topSearchResults = TODO;
-
-      const answer = streamText({
-        model: google('gemini-2.5-flash'),
-        system: `You are a helpful email assistant that answers questions based on email content.
-          You should use the provided emails to answer questions accurately.
-          ALWAYS cite sources using markdown formatting with the email subject as the source.
-          Be concise but thorough in your explanations.
-        `,
-        prompt: [
-          '## Conversation History',
-          formatMessageHistory(messages),
-          '## Emails',
-          // Content continues...
+// TODO: call the searchEmails function with the
+// conversation history to get the search results
+const searchResults = TODO;
 ```
 
-You'll need to call the `searchEmails` function with the conversation history, then slice the results to get the top results (let's say top 5).
+- [ ] Call the `searchEmails` function with the formatted message history
+  - Use `formatMessageHistory(messages)` to convert the messages array into a string query
+  - This will embed the entire conversation and search for relevant emails
 
-I recommend logging out the search results to see which emails are being fetched. Once that's done, we should get similar performance to what we had before, except probably a little bit improved.
+- [ ] Locate the second TODO comment
 
-Good luck with the implementation!
+```ts
+// TODO: take the top X search results
+const topSearchResults = TODO;
+```
 
-## Steps To Complete
+- [ ] Use the `.slice()` method to get the top 5 search results from the `searchResults` array
 
-- [ ] Implement the `embedLotsOfText` function in [`create-embeddings.ts`](./api/create-embeddings.ts) using the `embedMany` function from the AI SDK
+### Testing Your Implementation
 
-- [ ] Implement the `embedOnePieceOfText` function using the `embed` function from the AI SDK
+- [ ] Run the application using `pnpm run dev`
+  - The server will first embed all emails (this may take a moment on first run)
+  - Watch for "Embedding Emails" and "Embedding complete" messages in the terminal
 
-- [ ] Implement the `calculateScore` function using the `cosineSimilarity` function from `ai`
+- [ ] Open your browser to `localhost:3000`
 
-- [ ] In [`chat.ts`](./api/chat.ts), call the `searchEmails` function with the conversation history
+- [ ] Test the default query "What was Sarah looking for in a house?"
+  - Check the browser console to see which emails were returned
+  - Verify that relevant emails about Sarah's house search appear in the results
 
-- [ ] Slice the results to get the top 5 (or another number of your choosing) search results
+- [ ] Add console logs to see the search results and their scores
 
-- [ ] Add a `console.log` to see which emails are being fetched
+```ts
+console.log(
+  topSearchResults.map(
+    (result) => `${result.email.subject} (${result.score})`,
+  ),
+);
+```
 
-- [ ] Test your implementation by running the local dev server and asking questions about emails in the chat interface.
-
-- [ ] Observe the console logs to see which emails are being retrieved for your queries - and notice whether the results are better or worse than the BM25 results.
-
-## Crash Course Links
-
-- [01.02 - Choosing Your Model](../../../../../internal/LESSON_LEARNINGS.md#0102---choosing-your-model) - `google.textEmbeddingModel()` usage
-- [01.03 - Generating Text](../../../../../internal/LESSON_LEARNINGS.md#0103---generating-text) - AI SDK basics
+- [ ] Try different queries to test semantic search capabilities
+  - Try queries that don't use exact keywords from the emails
+  - Verify that semantically similar emails are returned even without keyword matches
