@@ -23,7 +23,7 @@ execute: async ({ to, subject, content }) => {
 
 - [ ] Notice how the tool doesn't communicate with the frontend at all
 
-The [writer object](/PLACEHOLDER/ai-sdk-writer) is available in the `execute` function of [`createUIMessageStream`](/PLACEHOLDER/createUIMessageStream) but isn't being used to send data to the frontend.
+The [writer object](https://ai-sdk.dev/docs/reference/ai-sdk-ui/create-ui-message-stream) is available in the `execute` function of `createUIMessageStream` but isn't being used to send data to the frontend.
 
 ### Sending Approval Requests To The Frontend
 
@@ -44,7 +44,7 @@ execute: ({ to, subject, content }) => {
 
 - [ ] Write the approval request using the `writer.write()` method
 
-The [writer.write()](/PLACEHOLDER/ai-sdk-writer-write) method accepts an object with:
+The writer.write() method accepts an object with:
 
 - `type`: set to `'data-approval-request'`
 - `data`: an object containing your `tool` data
@@ -57,7 +57,7 @@ The `tool` should be a `ToolRequiringApproval` object with:
 
 ### Stopping At Tool Calls
 
-- [ ] Add a second stop condition to the [`stopWhen`](/PLACEHOLDER/ai-sdk-stop-when) array
+- [ ] Add a second stop condition to the [stopWhen](https://ai-sdk.dev/docs/agents/loop-control) array
 
 Currently, the agent only stops when `stepCountIs(10)`. You need to also stop when the `sendEmail` tool is called:
 
@@ -65,7 +65,7 @@ Currently, the agent only stops when `stepCountIs(10)`. You need to also stop wh
 stopWhen: [stepCountIs(10)],
 ```
 
-- [ ] Import the [`hasToolCall`](/PLACEHOLDER/ai-sdk-has-tool-call) function from the AI SDK
+- [ ] Import the [hasToolCall](https://ai-sdk.dev/docs/reference/ai-sdk-core/has-tool-call) function from the AI SDK
 
 This function is already imported in the file, but check that it's available:
 

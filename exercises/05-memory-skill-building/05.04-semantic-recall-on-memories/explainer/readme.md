@@ -2,7 +2,7 @@ Our memory system is growing, but we've hit a critical problem. We're loading _e
 
 Think about it: if you're asking about your favorite drinks, you don't need memories about your childhood hometown cluttering up the context. You need the system to be smart about which memories matter _right now_.
 
-This is where [retrieval](/PLACEHOLDER/retrieval-augmented-generation) comes back into play. Just like we learned earlier, we need to search through our memories semantically and return only the most relevant ones.
+This is where retrieval comes back into play. Just like we learned earlier, we need to search through our memories semantically and return only the most relevant ones.
 
 ## Steps To Complete
 
@@ -10,11 +10,11 @@ This is where [retrieval](/PLACEHOLDER/retrieval-augmented-generation) comes bac
 
 - [ ] Review how the previous approach loaded memories
 
-The old system used [`loadMemories()`](/PLACEHOLDER/load-memories) which fetches every single memory from the database. All memories were added to the system prompt, regardless of relevance.
+The old system used `loadMemories()` which fetches every single memory from the database. All memories were added to the system prompt, regardless of relevance.
 
 - [ ] Consider the scalability issue
 
-As the memory database grows to hundreds or thousands of items, passing all of them to the [LLM](/PLACEHOLDER/large-language-models) becomes wasteful. This pollutes the [context window](/PLACEHOLDER/context-window) with irrelevant information.
+As the memory database grows to hundreds or thousands of items, passing all of them to the LLM becomes wasteful. This pollutes the [context window](https://www.aihero.dev/what-is-the-context-window) with irrelevant information.
 
 ### Understand How Query Rewriting Works
 
@@ -44,13 +44,13 @@ const queryRewriterResult = await generateObject({
 
 - [ ] Understand what the query rewriter produces
 
-It generates `keywords` for [BM25 search](/PLACEHOLDER/bm25-search) (exact keyword matching). It generates a `searchQuery` for [embedding](/PLACEHOLDER/embeddings)-based search (semantic similarity).
+It generates `keywords` for [BM25 search](https://en.wikipedia.org/wiki/Okapi_BM25) (exact keyword matching). It generates a `searchQuery` for [embedding](https://ai-sdk.dev/docs/ai-sdk-core/embeddings#embeddings)-based search (semantic similarity).
 
 ### See How Hybrid Search Retrieves Memories
 
 - [ ] Examine how the results are retrieved in `api/chat.ts`
 
-The `searchMemories()` function combines two retrieval methods: [embeddings](/PLACEHOLDER/embeddings) for semantic similarity and [BM25](/PLACEHOLDER/bm25-search) for keyword matching.
+The `searchMemories()` function combines two retrieval methods: embeddings for semantic similarity and BM25 for keyword matching.
 
 ```ts
 const foundMemories = await searchMemories({
@@ -66,11 +66,11 @@ const formattedMemories = foundMemories
 
 - [ ] Notice how only the top 4 memories are used
 
-The `.slice(0, 4)` ensures we don't bloat the [context window](/PLACEHOLDER/context-window). These are the most relevant memories for the current query.
+The `.slice(0, 4)` ensures we don't bloat the context window. These are the most relevant memories for the current query.
 
 - [ ] Understand reciprocal rank fusion
 
-The `searchMemories()` function uses [reciprocal rank fusion](/PLACEHOLDER/reciprocal-rank-fusion) to combine the results from both retrieval methods.
+The `searchMemories()` function uses [reciprocal rank fusion](https://www.elastic.co/docs/reference/elasticsearch/rest-apis/reciprocal-rank-fusion) to combine the results from both retrieval methods.
 
 ### Test The Selective Retrieval
 
@@ -103,8 +103,8 @@ Only memories related to drinks and beverages should be retrieved. Unrelated mem
 
 As memory databases grow larger, selective retrieval becomes essential. Every memory system needs a way to winnow down which information reaches the LLM.
 
-This prevents [context pollution](/PLACEHOLDER/context-window) from irrelevant information. It scales better as the memory database grows. It focuses the LLM's attention on what actually matters for the current conversation.
+This prevents context pollution from irrelevant information. It scales better as the memory database grows. It focuses the LLM's attention on what actually matters for the current conversation.
 
 - [ ] Explore how this could be extended
 
-A [re-ranking](/PLACEHOLDER/reranking-concept) step could further refine the results. Multiple retrieval methods could run in parallel. Different weighting could be applied to different memory types.
+A [re-ranking](https://www.elastic.co/docs/solutions/search/ranking) step could further refine the results. Multiple retrieval methods could run in parallel. Different weighting could be applied to different memory types.

@@ -2,7 +2,7 @@ BM25 is purely keyword-based matching. It can't understand meaning. If a documen
 
 Embeddings solve this problem by capturing semantic meaning. They convert text into vectors - long arrays of numbers that represent how an LLM understands the text. Two semantically similar phrases will have similar embeddings, even if they share no keywords.
 
-To search with embeddings, we compare one embedding to another using [cosine similarity](/PLACEHOLDER/cosine-similarity). This mathematical function tells us how close two embeddings are in vector space, giving us a score that represents how similar the search text is to each document.
+To search with embeddings, we compare one embedding to another using [cosine similarity](https://ai-sdk.dev/docs/reference/ai-sdk-core/cosine-similarity). This mathematical function tells us how close two embeddings are in vector space, giving us a score that represents how similar the search text is to each document.
 
 This is fundamentally different from BM25. Keywords and term frequency don't matter. Only the meaning behind the words.
 
@@ -19,7 +19,7 @@ BM25 matches exact keywords. Embeddings understand meaning. Review this comparis
 | BM25       | "sun blocked by moon" | "total solar eclipse" | ❌ No  |
 | Embeddings | "sun blocked by moon" | "total solar eclipse" | ✅ Yes |
 
-- [ ] Review the [Embeddings Overview](/PLACEHOLDER/embeddings-overview) to understand how embeddings work in the AI SDK
+- [ ] Review the [Embeddings Overview](https://ai-sdk.dev/docs/ai-sdk-core/embeddings#embeddings) to understand how embeddings work in the AI SDK
 
 - [ ] Navigate to `api/create-embeddings.ts` and locate the `embedLotsOfText` function
 
@@ -39,7 +39,7 @@ const embedLotsOfText = async (
 };
 ```
 
-- [ ] Use the [`embedMany`](/PLACEHOLDER/embed-many) function from the AI SDK to create embeddings for multiple emails at once
+- [ ] Use the [`embedMany`](https://ai-sdk.dev/docs/ai-sdk-core/embeddings#embeddings) function from the AI SDK to create embeddings for multiple emails at once
 
 Pass these parameters:
 
@@ -63,7 +63,7 @@ const embedOnePieceOfText = async (
 };
 ```
 
-- [ ] Use the [`embed`](/PLACEHOLDER/embed) function from the AI SDK to create an embedding for a single piece of text
+- [ ] Use the `embed` function from the AI SDK to create an embedding for a single piece of text
 
 Pass these parameters:
 
@@ -84,7 +84,7 @@ const calculateScore = (
 };
 ```
 
-- [ ] Use the [`cosineSimilarity`](/PLACEHOLDER/cosine-similarity) function from the AI SDK to compare the two embeddings
+- [ ] Use the `cosineSimilarity` function from the AI SDK to compare the two embeddings
 
 Pass `queryEmbedding` first, then `embedding`. Return the similarity score.
 
@@ -100,7 +100,7 @@ const searchResults = TODO;
 
 - [ ] Call the `searchEmails` function with the formatted message history
 
-Use `formatMessageHistory(messages)` to convert the [messages](/PLACEHOLDER/messages) array into a string query. This embeds the entire conversation and searches for relevant emails.
+Use `formatMessageHistory(messages)` to convert the [messages](https://www.aihero.dev/workshops/ai-sdk-v5-crash-course/ui-messages-vs-model-messages~s7jyt) array into a string query. This embeds the entire conversation and searches for relevant emails.
 
 - [ ] Locate the second TODO comment
 

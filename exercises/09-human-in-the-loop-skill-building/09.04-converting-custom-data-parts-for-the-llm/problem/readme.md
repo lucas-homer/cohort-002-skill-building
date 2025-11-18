@@ -1,6 +1,6 @@
 Your system is working from the front-end perspective, but there's a critical problem. The custom data parts you've created (`approval-request` and `approval-decision`) are being ignored when passed to the LLM.
 
-The LLM understands text parts, tool calls, and reasoning tokens because those are built into the provider. But it has no idea what your custom data parts mean. When you call [`convertToModelMessages()`](/PLACEHOLDER/convertToModelMessages), these custom parts simply vanish from the message history.
+The LLM understands text parts, tool calls, and reasoning tokens because those are built into the provider. But it has no idea what your custom data parts mean. When you call [convertToModelMessages()](https://ai-sdk.dev/docs/reference/ai-sdk-ui/convert-to-model-messages), these custom parts simply vanish from the message history.
 
 This creates a broken feedback loop. When the user approves or rejects a tool, the LLM never learns about it. So if you reject an email request with feedback, the model won't see that rejection and won't try a different approach.
 
@@ -12,7 +12,7 @@ Fortunately, the AI SDK has a built-in solution.
 
 - [ ] Open `api/chat.ts` and locate the `annotateMessageHistory` function
 
-  This function is where [`convertToModelMessages()`](/PLACEHOLDER/convertToModelMessages) is called:
+  This function is where convertToModelMessages() is called:
 
   ```ts
   const annotateMessageHistory = (
@@ -28,7 +28,7 @@ Fortunately, the AI SDK has a built-in solution.
   };
   ```
 
-- [ ] Add a second parameter to [`convertToModelMessages()`](/PLACEHOLDER/convertToModelMessages)
+- [ ] Add a second parameter to convertToModelMessages()
 
   You'll pass an object with a `convertDataPart` function:
 

@@ -1,6 +1,6 @@
 Getting insights about how your system performs is great. But the real power comes when you use that data to make smarter decisions about development.
 
-One way to make those smarter decisions is to A/B test different approaches. [Evalite](/PLACEHOLDER/evalite) has a feature called [`evalite.each()`](/PLACEHOLDER/evalite-each) that lets you run the same task with different variants to compare their performance.
+One way to make those smarter decisions is to A/B test different approaches. [Evalite](https://www.evalite.dev/) has a feature called [`evalite.each()`](https://www.evalite.dev/guides/variant-comparison) that lets you run the same task with different variants to compare their performance.
 
 In this case, you're going to test your agent with different language models to see which one gives you the best results at the lowest cost. The agent stays the same, but the model changes—so you can directly compare how models like Gemini Flash Lite, Gemini 2.0 Flash, and GPT-4o mini stack up against each other.
 
@@ -8,7 +8,7 @@ In this case, you're going to test your agent with different language models to 
 
 ### Understanding The Setup
 
-- [ ] Review the `agent.eval.ts` file and locate the [`evalite.each()`](/PLACEHOLDER/evalite-each) call
+- [ ] Review the `agent.eval.ts` file and locate the `evalite.each()` call
 
 The current setup has a single model in the array:
 
@@ -40,13 +40,13 @@ task: async (messages, model) => {
 
 ### Adding More Models To Compare
 
-- [ ] Add at least 2-3 more models to the [`evalite.each()`](/PLACEHOLDER/evalite-each) array to compare different LLM performance
+- [ ] Add at least 2-3 more models to the `evalite.each()` array to compare different LLM performance
 
 Consider testing these options:
 
-- [`google('gemini-2.0-flash-lite')`](/PLACEHOLDER/google-gemini-2.0-flash-lite) - A lighter, cheaper Gemini model
-- [`google('gemini-1.5-flash')`](/PLACEHOLDER/google-gemini-1.5-flash) - An earlier version of Gemini
-- Models from other providers like [OpenAI](/PLACEHOLDER/openai-models) or [Anthropic](/PLACEHOLDER/anthropic-models)
+- `google('gemini-2.0-flash-lite')` - A lighter, cheaper Gemini model
+- `google('gemini-1.5-flash')` - An earlier version of Gemini
+- Models from other providers like OpenAI or Anthropic
 
 Here's how to add another model variant:
 
@@ -63,7 +63,7 @@ evalite.each([
 ]);
 ```
 
-Check the [AI SDK documentation](/PLACEHOLDER/ai-sdk-models) for available models and how to import them.
+Check the AI SDK documentation for available models and how to import them.
 
 ### Optionally Add More Test Cases
 
@@ -93,7 +93,7 @@ data: [
 pnpm run dev
 ```
 
-This will run the [Evalite](/PLACEHOLDER/evalite) runner in watch mode.
+This will run the Evalite runner in watch mode.
 
 - [ ] Observe the results as each model is tested against all your test cases
 

@@ -1,6 +1,6 @@
 You might think we're going to start with embeddings for retrieval. They've been fashionable for the last couple of years, and many people associate them with LLM retrieval.
 
-Instead, we're going to start with something much simpler and incredibly useful: [BM25](/PLACEHOLDER/bm25-algorithm). It's a keyword search algorithm that's been running in production search engines for years.
+Instead, we're going to start with something much simpler and incredibly useful: [BM25](https://en.wikipedia.org/wiki/Okapi_BM25). It's a keyword search algorithm that's been running in production search engines for years.
 
 BM25 is cheaper to run than embeddings and more practical for many retrieval tasks. It's the perfect foundation before moving to more complex approaches.
 
@@ -10,7 +10,7 @@ BM25 is cheaper to run than embeddings and more practical for many retrieval tas
 
 - [ ] Learn what BM25 is and why it's useful for retrieval
 
-[BM25](/PLACEHOLDER/bm25-algorithm) is a keyword search algorithm that balances simplicity with effectiveness. Unlike embedding-based approaches, it requires no model training and runs with minimal overhead.
+BM25 is a keyword search algorithm that balances simplicity with effectiveness. Unlike embedding-based approaches, it requires no model training and runs with minimal overhead.
 
 - [ ] Understand the three factors that BM25 uses to score documents
 
@@ -52,7 +52,7 @@ The playground contains 150 curated emails. Each email has a subject line and bo
 
 - [ ] Test basic keyword searches
 
-Try searching for "David mortgage" (two separate keywords). Observe how emails are ranked by their [BM25](/PLACEHOLDER/bm25-algorithm) scores.
+Try searching for "David mortgage" (two separate keywords). Observe how emails are ranked by their BM25 scores.
 
 Email #1 might score 5.5, Email #2 might score 4.8, and so on. Higher scores mean more relevant matches.
 
@@ -60,13 +60,13 @@ Email #1 might score 5.5, Email #2 might score 4.8, and so on. Higher scores mea
 
 Search for "survey reports" and observe the results. Try other keyword combinations to see how they're ranked.
 
-Notice which emails rank at the top and which fall to the bottom. Patterns will emerge about what [BM25](/PLACEHOLDER/bm25-algorithm) considers relevant.
+Notice which emails rank at the top and which fall to the bottom. Patterns will emerge about what BM25 considers relevant.
 
 - [ ] Identify weaknesses in BM25
 
 Search for the word "home" and observe if results include semantically similar words like "house".
 
-[BM25](/PLACEHOLDER/bm25-algorithm) only matches exact keywords, not synonyms or related terms. This is its biggest limitation compared to embeddings-based approaches.
+BM25 only matches exact keywords, not synonyms or related terms. This is its biggest limitation compared to embeddings-based approaches.
 
 ### Understanding the Implementation
 
@@ -95,11 +95,11 @@ const searchEmails = (
 };
 ```
 
-This function combines the `subject` and `body`, converts everything to lowercase, and passes both the documents and keywords to the [BM25](/PLACEHOLDER/bm25-algorithm) implementation.
+This function combines the `subject` and `body`, converts everything to lowercase, and passes both the documents and keywords to the BM25 implementation.
 
 - [ ] Note how the implementation combines email subject and body
 
-Content is converted to lowercase before being passed to [BM25](/PLACEHOLDER/bm25-algorithm). Keywords are also normalized to lowercase.
+Content is converted to lowercase before being passed to BM25. Keywords are also normalized to lowercase.
 
 Results are sorted by score in descending order, so the most relevant emails appear first.
 
@@ -136,10 +136,10 @@ export const GET = async (req: Request): Promise<Response> => {
 
 The search query is split by spaces into individual keywords, then each is trimmed of whitespace.
 
-All keywords are passed together to [BM25](/PLACEHOLDER/bm25-algorithm), which scores each document against all of them simultaneously.
+All keywords are passed together to BM25, which scores each document against all of them simultaneously.
 
 - [ ] Spend time experimenting with the playground to build intuition
 
 Try various searches to see how different queries perform. Notice patterns in what scores highly.
 
-Pay attention to where [BM25](/PLACEHOLDER/bm25-algorithm) excels (exact keyword matching) and where it falls short (synonyms, semantic understanding, typos).
+Pay attention to where BM25 excels (exact keyword matching) and where it falls short (synonyms, semantic understanding, typos).

@@ -4,7 +4,7 @@ When building AI agents that use tools, we need to understand how well different
 
 The challenge becomes even more complex as we add more tools to our agent. How many tools can a model handle before it starts making mistakes? Which models are best at tool selection? These are the questions we need to answer through systematic evaluation.
 
-In this exercise, you'll set up an evaluation harness using [Evalite](/PLACEHOLDER/evalite) to test how well an agent selects and calls tools across different scenarios. You'll extract the [tool calls](/PLACEHOLDER/tool-calls) from the agent's response and inspect them to see what the model decided to do.
+In this exercise, you'll set up an evaluation harness using [Evalite](https://www.evalite.dev/) to test how well an agent selects and calls tools across different scenarios. You'll extract the [tool calls](https://ai-sdk.dev/docs/ai-sdk-core/tools-and-tool-calling) from the agent's response and inspect them to see what the model decided to do.
 
 ## Steps To Complete
 
@@ -20,7 +20,7 @@ Each case represents a different user request that should trigger specific tool 
 
 - [ ] Examine the `runAgent` function in `agent.ts`
 
-The function calls [`streamText`](/PLACEHOLDER/streamText) with a model, messages, tools, and a `stopWhen` condition:
+The function calls [`streamText`](https://ai-sdk.dev/docs/reference/ai-sdk-core/stream-text) with a model, messages, tools, and a `stopWhen` condition:
 
 ```ts
 const result = runAgent(
@@ -30,13 +30,13 @@ const result = runAgent(
 );
 ```
 
-The [`stepCountIs(1)`](/PLACEHOLDER/stepCountIs) tells the agent to take only one step before stopping. This prevents the agent from executing the actual tool and allows us to inspect its decision instead.
+The [`stepCountIs(1)`](https://ai-sdk.dev/docs/reference/ai-sdk-core/step-count-is) tells the agent to take only one step before stopping. This prevents the agent from executing the actual tool and allows us to inspect its decision instead.
 
 ### Consuming the Stream
 
 - [ ] Locate the first TODO in the `task` function
 
-The `runAgent` function returns a stream that needs to be [consumed](/PLACEHOLDER/consuming-streams) before the agent completes execution.
+The `runAgent` function returns a stream that needs to be [consumed](https://ai-sdk.dev/docs/advanced/stopping-streams) before the agent completes execution.
 
 ```ts
 const result = runAgent(
@@ -48,7 +48,7 @@ const result = runAgent(
 // TODO: Consume the stream so the agent completes execution
 ```
 
-- [ ] Call [`consumeStream()`](/PLACEHOLDER/consumeStream) on the result
+- [ ] Call `consumeStream()` on the result
 
 ```ts
 await result.consumeStream();
@@ -60,7 +60,7 @@ This ensures all the data is available before you try to access it.
 
 - [ ] Locate the second TODO about extracting tool calls
 
-The `result` object has a [`toolCalls`](/PLACEHOLDER/toolCalls) property that contains all the tools the agent decided to call. Map over it to create a cleaner structure:
+The `result` object has a `toolCalls` property that contains all the tools the agent decided to call. Map over it to create a cleaner structure:
 
 ```ts
 // TODO: Extract the toolCalls from the result
@@ -93,7 +93,7 @@ In case the agent didn't call any tools, you'll want to capture what it said ins
 const text = await result.text;
 ```
 
-- [ ] Access the [`text`](/PLACEHOLDER/text-property) property from the result and await it
+- [ ] Access the `text` property from the result and await it
 
 This gives you the full text response from the model.
 
@@ -123,9 +123,9 @@ return {
 
 - [ ] Run the evaluation with `pnpm run dev`
 
-This starts [Evalite](/PLACEHOLDER/evalite) in watch mode and runs all three test cases automatically.
+This starts Evalite in watch mode and runs all three test cases automatically.
 
-- [ ] Open [Evalite](/PLACEHOLDER/evalite) in your browser
+- [ ] Open Evalite in your browser
 
 The output should show the three test cases with the `toolCalls` and `text` that were extracted.
 

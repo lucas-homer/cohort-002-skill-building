@@ -1,6 +1,6 @@
 Retrieving search results is a balancing act. Take too many chunks and you'll load your LLM with irrelevant information. Take too few and you might miss the answer entirely.
 
-[Reranking](/PLACEHOLDER/reranking-concept) solves this problem by using an LLM to filter results. You pass a larger set of search results (like 30 chunks) to a reranking model, which evaluates them against your query and returns only the truly relevant ones.
+[Reranking](https://www.elastic.co/docs/solutions/search/ranking) solves this problem by using an LLM to filter results. You pass a larger set of search results (like 30 chunks) to a reranking model, which evaluates them against your query and returns only the truly relevant ones.
 
 This two-step process gives you the best of both worlds: comprehensive coverage without the noise.
 
@@ -26,7 +26,7 @@ The current search process combines multiple ranking methods:
 | Embeddings                   | Semantic similarity scores                 |
 | Reciprocal Rank Fusion (RRF) | Combines both scores into a single ranking |
 
-Learn more about [BM25 ranking](/PLACEHOLDER/bm25-ranking), [embeddings](/PLACEHOLDER/embeddings), and [reciprocal rank fusion](/PLACEHOLDER/rrf).
+Learn more about [BM25 ranking](https://en.wikipedia.org/wiki/Okapi_BM25), [embeddings](https://ai-sdk.dev/docs/ai-sdk-core/embeddings#embeddings), and [reciprocal rank fusion](https://www.elastic.co/docs/reference/elasticsearch/rest-apis/reciprocal-rank-fusion).
 
 ### Implementing Reranking
 
@@ -43,7 +43,7 @@ Learn more about [BM25 ranking](/PLACEHOLDER/bm25-ranking), [embeddings](/PLACEH
 const rerankedResults = TODO;
 ```
 
-- [ ] Create a [Zod schema](/PLACEHOLDER/zod-schema-describe) that expects an array of numbers (chunk IDs)
+- [ ] Create a [Zod schema](https://zod.dev/metadata?id=describe) that expects an array of numbers (chunk IDs)
 
 ```ts
 const schema = z.object({
@@ -53,11 +53,11 @@ const schema = z.object({
 });
 ```
 
-- [ ] Call [`generateObject()`](/PLACEHOLDER/generate-object) with the appropriate parameters
+- [ ] Call [`generateObject()`](https://ai-sdk.dev/docs/reference/ai-sdk-core/generate-object) with the appropriate parameters
 
-Pass the following to [`generateObject()`](/PLACEHOLDER/generate-object):
+Pass the following to `generateObject()`:
 
-- Use [`google('gemini-2.5-flash-lite')`](/PLACEHOLDER/google-models) as the model
+- Use `google('gemini-2.5-flash-lite')` as the model
 - Set a `system` prompt explaining the reranker's role
 - Instruct it to be selective and exclude tangentially related chunks
 - Pass the `schema` you created
@@ -72,7 +72,7 @@ const rerankedResults = await generateObject({
 });
 ```
 
-- [ ] Access the reranker's results using the [`object`](/PLACEHOLDER/generate-object-result) property
+- [ ] Access the reranker's results using the `object` property
 
 ```ts
 const approvedChunkIds: number[] =

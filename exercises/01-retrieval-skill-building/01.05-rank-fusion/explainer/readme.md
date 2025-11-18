@@ -2,7 +2,7 @@ Search algorithms have different strengths. BM25 excels at exact keyword matchin
 
 The problem is that BM25 returns large numbers like 4.5 or 6, while semantic search returns values between 0 and 1. If you combined them directly, BM25 would dominate the results completely.
 
-Reciprocal Rank Fusion solves this by normalizing scores from different ranking systems into a coherent combined rank. This playground lets you explore how the three approaches compare.
+[Reciprocal Rank Fusion](https://www.elastic.co/docs/reference/elasticsearch/rest-apis/reciprocal-rank-fusion) solves this by normalizing scores from different ranking systems into a coherent combined rank. This playground lets you explore how the three approaches compare.
 
 ## Steps To Complete
 
@@ -60,7 +60,7 @@ The `RRF_K` constant controls how aggressively each ranking system influences th
 | Higher (60) | Forgiving - algorithms contribute less aggressively | Default, balanced approach     |
 | Lower (30)  | Aggressive - algorithms contribute more heavily     | When you want stronger signals |
 
-The value 60 is the [commonly used default](/PLACEHOLDER/reciprocal-rank-fusion-tuning) for [reciprocal rank fusion](/PLACEHOLDER/reciprocal-rank-fusion).
+The value 60 is the commonly used default for reciprocal rank fusion.
 
 ### Testing the Playground
 

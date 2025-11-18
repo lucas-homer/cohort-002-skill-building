@@ -2,9 +2,9 @@
 
 Personal assistants need to truly understand who you are. They need to know your preferences, habits, and important details about your life.
 
-An [LLM system](/PLACEHOLDER/llm-systems) that learns and retains this information is a long-term goal for many AI applications. It's an area of extremely active research.
+An LLM system that learns and retains this information is a long-term goal for many AI applications. It's an area of extremely active research.
 
-The [AI SDK](/PLACEHOLDER/ai-sdk) provides all the primitives you need to build a memory system. However, the real challenge is in the implementation details.
+The [AI SDK](https://ai-sdk.dev/docs/foundations/overview) provides all the primitives you need to build a memory system. However, the real challenge is in the implementation details.
 
 In this exercise, you'll build the foundational pieces: loading memories from a database, displaying them to the model, and extracting new permanent memories from each conversation.
 
@@ -14,7 +14,7 @@ In this exercise, you'll build the foundational pieces: loading memories from a 
 
 - [ ] Understand why personal assistants need memory systems
 
-Memory systems allow [LLMs](/PLACEHOLDER/large-language-models) to retain information about users across conversations. This enables:
+Memory systems allow LLMs to retain information about users across conversations. This enables:
 
 - Learning user preferences and habits over time
 - Providing personalized assistance
@@ -28,7 +28,7 @@ Look at the POST route handler where incoming chat messages are processed. The s
 
 - [ ] Locate the imported memory functions
 
-The [`loadMemories`](/PLACEHOLDER/load-memories) and [`saveMemories`](/PLACEHOLDER/save-memories) functions are already imported:
+The `loadMemories` and `saveMemories` functions are already imported:
 
 ```ts
 import {
@@ -40,7 +40,7 @@ import {
 
 - [ ] Load memories from the database in the POST route
 
-Use the [`loadMemories()`](/PLACEHOLDER/load-memories) function to fetch memories from the database and store the result in a variable:
+Use the `loadMemories()` function to fetch memories from the database and store the result in a variable:
 
 ```ts
 // TODO: Use the loadMemories function to load the memories from the database
@@ -75,11 +75,11 @@ const memoriesText = memories.map(formatMemory).join('\n\n');
 
 - [ ] Understand the memory extraction process
 
-The [`onFinish`](/PLACEHOLDER/on-finish) callback runs after the model responds. This is where new memories are extracted and saved.
+The [onFinish](https://ai-sdk.dev/docs/troubleshooting/stream-abort-handling) callback runs after the model responds. This is where new memories are extracted and saved.
 
 - [ ] Generate new memories from the conversation
 
-Use [`generateObject()`](/PLACEHOLDER/generate-object) to analyze the full conversation and extract memories. Pass it the entire [message history](/PLACEHOLDER/message-history) and existing memories:
+Use [generateObject()](https://ai-sdk.dev/docs/reference/ai-sdk-core/generate-object) to analyze the full conversation and extract memories. Pass it the entire message history and existing memories:
 
 ```ts
 onFinish: async (response) => {
@@ -101,7 +101,7 @@ Write a system prompt that focuses on permanent memories about the user - their 
 
 - [ ] Extract the memories from the result object
 
-After [`generateObject()`](/PLACEHOLDER/generate-object) completes, access the memories array stored in `memoriesResult.object.memories`:
+After generateObject() completes, access the memories array stored in `memoriesResult.object.memories`:
 
 ```ts
 const newMemories = memoriesResult.object.memories;
@@ -119,7 +119,7 @@ console.log('newMemories', newMemories);
 
 - [ ] Save the extracted memories to the database
 
-Create memory objects with the required fields: `id`, `memory`, and `createdAt`. Use [`generateId()`](/PLACEHOLDER/generate-id) for each memory's ID and `new Date().toISOString()` for the timestamp:
+Create memory objects with the required fields: `id`, `memory`, and `createdAt`. Use [generateId()](https://ai-sdk.dev/docs/reference/ai-sdk-core/generate-id) for each memory's ID and `new Date().toISOString()` for the timestamp:
 
 ```ts
 const newMemories = memoriesResult.object.memories;
@@ -199,4 +199,4 @@ Have several exchanges with the assistant. Check that:
 
 - New memories are added to the database
 - Memories persist across new conversations
-- The assistant references stored memories in its [system prompt](/PLACEHOLDER/system-prompt)
+- The assistant references stored memories in its [system prompt](https://ai-sdk.dev/docs/foundations/prompts)

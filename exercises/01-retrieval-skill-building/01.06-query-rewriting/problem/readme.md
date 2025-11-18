@@ -10,11 +10,11 @@ Instead of just generating keywords, we'll also generate a search query. This gi
 
 - [ ] Understand the difference between keywords and search queries
 
-Keywords work well for exact terminology in [BM25](/PLACEHOLDER/bm25-search). Search queries work better for [semantic search](/PLACEHOLDER/semantic-search) because they can be more general and conceptual. The same user question needs to be rewritten differently for each search method.
+Keywords work well for exact terminology in BM25. Search queries work better for [semantic search](https://en.wikipedia.org/wiki/Semantic_search) because they can be more general and conceptual. The same user question needs to be rewritten differently for each search method.
 
-- [ ] Navigate to `api/chat.ts` and locate the [`generateObject`](/PLACEHOLDER/generate-object) call with the TODO comment
+- [ ] Navigate to `api/chat.ts` and locate the `generateObject` call with the TODO comment
 
-This is where we generate keywords for [BM25](/PLACEHOLDER/bm25-search). We're going to expand this to also generate a search query.
+This is where we generate keywords for BM25. We're going to expand this to also generate a search query.
 
 ```ts
 // TODO: Change the generateObject call so that it generates a search query in
@@ -40,7 +40,7 @@ const keywords = await generateObject({
 
 Add information about generating a search query for semantic search. Explain that the search query can be more general than the keywords because it will be used with embeddings rather than keyword matching.
 
-- [ ] Add a `searchQuery` field to the [schema](/PLACEHOLDER/zod-schema) object
+- [ ] Add a `searchQuery` field to the [schema](https://zod.dev/basics?id=defining-a-schema) object
 
 ```ts
 schema: z.object({
@@ -53,9 +53,9 @@ schema: z.object({
 }),
 ```
 
-- [ ] Define the `searchQuery` field using [`z.string()`](/PLACEHOLDER/zod-string)
+- [ ] Define the `searchQuery` field using [`z.string()`](https://zod.dev/?id=introduction)
 
-- [ ] Add a [`.describe()`](/PLACEHOLDER/zod-describe) call to explain that this query will be used for semantic search
+- [ ] Add a [`.describe()`](https://zod.dev/metadata?id=describe) call to explain that this query will be used for semantic search
 
 Explain that it can use broader terms compared to the exact keywords. This helps the LLM understand when and how to use this field.
 

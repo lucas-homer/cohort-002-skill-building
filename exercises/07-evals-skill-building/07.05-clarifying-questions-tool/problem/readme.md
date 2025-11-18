@@ -1,8 +1,8 @@
 We're going to add a new tool to our agent system - one that asks clarifying questions when a user's request is missing critical information.
 
-This is inspired by [Claude's approach](/PLACEHOLDER/claude-clarifying-questions) to handling ambiguous user requests. Instead of guessing what the user wants, the agent will intelligently recognize when it needs more details and ask for them using a structured UI.
+This is inspired by [Claude's approach](https://www.threads.com/@boris_cherny/post/DP6_Rc-k78s/video-claude-code-can-now-ask-you-interactive-questions-when-it-needs-more-information?hl=en-gb) to handling ambiguous user requests. Instead of guessing what the user wants, the agent will intelligently recognize when it needs more details and ask for them using a structured UI.
 
-The challenge here is significant: we have many tools competing for the [LLM's](/PLACEHOLDER/llm) attention. You'll need to use careful [tool descriptions](/PLACEHOLDER/tool-descriptions) and system prompts to make sure the agent recognizes when clarification is truly needed.
+The challenge here is significant: we have many tools competing for the LLM's attention. You'll need to use careful [tool descriptions](https://ai-sdk.dev/docs/ai-sdk-core/tools-and-tool-calling) and system prompts to make sure the agent recognizes when clarification is truly needed.
 
 ## Steps To Complete
 
@@ -65,7 +65,7 @@ scorers: [
 ],
 ```
 
-The scorer should return `1` if any [tool call](/PLACEHOLDER/tool-calling) has `toolName === 'askForClarification'`, and `0` otherwise.
+The scorer should return `1` if any tool call has `toolName === 'askForClarification'`, and `0` otherwise.
 
 ### Build the askForClarification Tool
 
@@ -96,7 +96,7 @@ askForClarification: tool({
 
 The description should explain when this tool should be used - specifically when a request is missing critical information needed to complete the task.
 
-Use the [describe()](/PLACEHOLDER/zod-describe) method on your [Zod schema](/PLACEHOLDER/zod-schema) to provide detailed field descriptions. This helps guide the [LLM](/PLACEHOLDER/llm) toward choosing the right tool.
+Use the [describe()](https://zod.dev/metadata?id=describe) method on your [Zod schema](https://zod.dev/basics?id=defining-a-schema) to provide detailed field descriptions. This helps guide the LLM toward choosing the right tool.
 
 ### Configure the System Prompt
 
@@ -135,12 +135,12 @@ The scorer should show `1` for each test case where the agent correctly called t
 
 This will likely require several iterations. Pay close attention to:
 
-- The clarity of your [tool description](/PLACEHOLDER/tool-descriptions)
+- The clarity of your tool description
 - The quality of your system prompt examples
-- Whether you need to adjust the [Zod schema](/PLACEHOLDER/zod-schema) fields to guide the agent better
+- Whether you need to adjust the Zod schema fields to guide the agent better
 
 Each iteration should bring you closer to perfect recognition of ambiguous requests.
 
-- [ ] (Optional) Test with multiple models using [evalite.each()](/PLACEHOLDER/evalite-each)
+- [ ] (Optional) Test with multiple models using `evalite.each()`
 
-Try testing with both [Gemini 2.0 Flash](/PLACEHOLDER/gemini-2-0-flash) and [GPT-4 Mini](/PLACEHOLDER/gpt-4-mini) to see if different models have different success rates at recognizing when clarification is needed.
+Try testing with both Gemini 2.0 Flash and GPT-4 Mini to see if different models have different success rates at recognizing when clarification is needed.

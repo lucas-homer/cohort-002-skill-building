@@ -8,7 +8,7 @@ By adding expected tool calls to your data points and implementing a scorer, you
 
 - [ ] Understand the scorer structure in `agent.eval.ts`
 
-The scorer receives an `output` object containing the [`toolCalls`](/PLACEHOLDER/tool-calls) array and an `expected` object that you'll define. Your job is to check if any tool call matches the expected tool.
+The scorer receives an `output` object containing the tool calls array and an `expected` object that you'll define. Your job is to check if any tool call matches the expected tool.
 
 - [ ] Implement the scorer logic to check for matching tool calls
 
@@ -65,7 +65,7 @@ Review each input and determine which tool from `agent.ts` should be called:
 
 - [ ] Run the evaluation with `pnpm run dev`
 
-This will start the [Evalite](/PLACEHOLDER/evalite) evaluation runner in watch mode.
+This will start the [Evalite](https://www.evalite.dev/) evaluation runner in watch mode.
 
 - [ ] Observe the evaluation results
 
@@ -73,4 +73,4 @@ Once the evaluation completes, you should see scores for each data point. The re
 
 - [ ] Check the average score across all data points
 
-[Evalite](/PLACEHOLDER/evalite) will calculate and display an average score for your entire evaluation suite. This gives you a clear sense of how well your agent is performing at calling the correct tools.
+Evalite will calculate and display an average score for your entire evaluation suite. This gives you a clear sense of how well your agent is performing at calling the correct tools.

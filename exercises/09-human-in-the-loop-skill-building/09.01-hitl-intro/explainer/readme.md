@@ -6,22 +6,22 @@ Instead of giving the AI full power to do anything it wants in the world, you ma
 
 ## The AI SDK v6 Announcement
 
-This material is in a funny spot because the [AI SDK](/PLACEHOLDER/ai-sdk) announced [v6](https://v6.ai-sdk.dev/docs/announcing-ai-sdk-6-beta) recently, which just adds a small extra couple of features on top of v5.
+This material is in a funny spot because the [AI SDK](https://ai-sdk.dev/docs/foundations/overview) announced [v6](https://v6.ai-sdk.dev/docs/announcing-ai-sdk-6-beta) recently, which just adds a small extra couple of features on top of v5.
 
 | Version Jump | Size  |
 | ------------ | ----- |
 | v4 to v5     | Large |
 | v5 to v6     | Small |
 
-One of the features they did announce was human in the loop. This is where you can specify [tool execution approval](/PLACEHOLDER/tool-execution-approval) by just adding `needsApproval: true` to a [tool definition](/PLACEHOLDER/tool-definition).
+One of the features they did announce was human in the loop. This is where you can specify [tool execution approval](https://ai-sdk.dev/docs/ai-sdk-core/tools-and-tool-calling) by just adding `needsApproval: true` to a tool definition.
 
-This is really great—it's obviously fantastic that this is baked into the [AI SDK](/PLACEHOLDER/ai-sdk) itself.
+This is really great—it's obviously fantastic that this is baked into the AI SDK itself.
 
 However, v6 is still in beta, and I don't yet feel comfortable teaching it - it's not yet stable enough.
 
 ## Building It Ourselves
 
-Instead, we're going to be building this ourselves using [custom data parts](/PLACEHOLDER/custom-data-parts).
+Instead, we're going to be building this ourselves using [custom data parts](https://ai-sdk.dev/docs/ai-sdk-ui/streaming-data).
 
 This is an incredibly valuable exercise because it teaches you how powerful custom data parts are as an abstraction.
 

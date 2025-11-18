@@ -1,6 +1,6 @@
 You've built a solid chunking and retrieval setup, but now it's time to put it to the test. The quality of your chunks directly impacts how well your search results perform.
 
-In this exercise, you'll explore how different retrieval methods rank the same chunks differently. [BM25](/PLACEHOLDER/bm25-keyword-search) handles keyword matching, [semantic search](/PLACEHOLDER/semantic-search) captures meaning, and [RRF](/PLACEHOLDER/reciprocal-rank-fusion) combines both approaches.
+In this exercise, you'll explore how different retrieval methods rank the same chunks differently. [BM25](https://en.wikipedia.org/wiki/Okapi_BM25) handles keyword matching, [semantic search](https://en.wikipedia.org/wiki/Semantic_search) captures meaning, and [RRF](https://www.elastic.co/docs/reference/elasticsearch/rest-apis/reciprocal-rank-fusion) combines both approaches.
 
 You'll also experiment with `chunkSize` and `chunkOverlap` to find the sweet spot for your use case.
 
@@ -10,11 +10,11 @@ You'll also experiment with `chunkSize` and `chunkOverlap` to find the sweet spo
 
 - [ ] Navigate to the exercise directory and understand that this combines chunking with three retrieval techniques
 
-The exercise includes [BM25](/PLACEHOLDER/bm25-keyword-search), [embeddings](/PLACEHOLDER/embeddings), and [RRF](/PLACEHOLDER/reciprocal-rank-fusion) to rank chunks in different ways.
+The exercise includes BM25, [embeddings](https://ai-sdk.dev/docs/ai-sdk-core/embeddings#embeddings), and RRF to rank chunks in different ways.
 
 - [ ] Run the application using `pnpm run dev`
 
-Watch for "Embedding book chunks" and "Embedding complete" messages. The server will create [embeddings](/PLACEHOLDER/embeddings) for all chunks.
+Watch for "Embedding book chunks" and "Embedding complete" messages. The server will create embeddings for all chunks.
 
 ```txt
 Embedding book chunks...
@@ -26,7 +26,7 @@ Server running at http://localhost:3000
 
 Search for "How did TypeScript start?" with keywords "TypeScript start beginning".
 
-Observe the chunks returned in the interface. Note that chunks are ordered by [RRF](/PLACEHOLDER/reciprocal-rank-fusion) (Reciprocal Rank Fusion) by default.
+Observe the chunks returned in the interface. Note that chunks are ordered by RRF (Reciprocal Rank Fusion) by default.
 
 - [ ] Experiment with the "Order by" controls at the top of the page
 
@@ -70,7 +70,7 @@ const splitter = new RecursiveCharacterTextSplitter({
 });
 ```
 
-The [`RecursiveCharacterTextSplitter`](/PLACEHOLDER/recursive-character-text-splitter) breaks your content into manageable pieces. `chunkSize` controls how large each piece is, and `chunkOverlap` controls how much they overlap.
+The [`RecursiveCharacterTextSplitter`](https://docs.langchain.com/oss/python/integrations/splitters) breaks your content into manageable pieces. `chunkSize` controls how large each piece is, and `chunkOverlap` controls how much they overlap.
 
 - [ ] Experiment with different chunk sizes
 
@@ -86,7 +86,7 @@ const splitter = new RecursiveCharacterTextSplitter({
 });
 ```
 
-Stop the server and delete the `data` folder to clear the [embeddings](/PLACEHOLDER/embeddings) cache.
+Stop the server and delete the `data` folder to clear the embeddings cache.
 
 Restart with `pnpm run dev` to re-embed with new chunk sizes.
 

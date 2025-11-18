@@ -8,7 +8,7 @@ To build a truly intelligent assistant, we need to extend our memory management 
 
 ### Understanding the Memory Management Schema
 
-- [ ] Review the [`generateObject`](/PLACEHOLDER/generate-object) call in the `onFinish` callback in `api/chat.ts`
+- [ ] Review the [generateObject](https://ai-sdk.dev/docs/reference/ai-sdk-core/generate-object) call in the `onFinish` callback in `api/chat.ts`
 
 This is where we extract memories from each conversation. Currently, the schema only defines how to extract new memories.
 
@@ -34,9 +34,9 @@ additions: z.array(TODO);
 
 ### Updating the System Prompt
 
-- [ ] Locate the `system` prompt in the [`generateObject`](/PLACEHOLDER/generate-object) call
+- [ ] Locate the `system` prompt in the generateObject call
 
-This prompt tells the [LLM](/PLACEHOLDER/large-language-model) how to manage memories. It currently only handles extraction.
+This prompt tells the LLM how to manage memories. It currently only handles extraction.
 
 - [ ] Update the system prompt to instruct the LLM to return `updates`, `deletions`, and `additions`
 
@@ -86,7 +86,7 @@ const filteredDeletions = deletions.filter(
 
 - [ ] Implement the memory updates
 
-Loop through each update and call [`updateMemory()`](/PLACEHOLDER/update-memory) with the memory `id` and updated content:
+Loop through each update and call `updateMemory()` with the memory `id` and updated content:
 
 ```ts
 updates.forEach((update) => TODO);
@@ -94,7 +94,7 @@ updates.forEach((update) => TODO);
 
 - [ ] Implement the memory deletions
 
-Loop through each filtered deletion and call [`deleteMemory()`](/PLACEHOLDER/delete-memory) with the memory `id`:
+Loop through each filtered deletion and call `deleteMemory()` with the memory `id`:
 
 ```ts
 filteredDeletions.forEach((deletion) => TODO);
@@ -102,7 +102,7 @@ filteredDeletions.forEach((deletion) => TODO);
 
 - [ ] Implement saving new memories
 
-Use [`saveMemories()`](/PLACEHOLDER/save-memories) to persist additions to the database. Map over additions to create memory objects with required fields:
+Use `saveMemories()` to persist additions to the database. Map over additions to create memory objects with required fields:
 
 ```ts
 saveMemories(additions.map((addition) => TODO));

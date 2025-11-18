@@ -1,6 +1,6 @@
 Document chunking is how we break large documents into smaller, manageable pieces for AI systems. But here's the thing - there's no one-size-fits-all approach.
 
-Different documents need different chunking strategies. A technical book requires different handling than a blog post or an email thread. The key is understanding how to split content so that each chunk remains useful and searchable for an [LLM](/PLACEHOLDER/what-is-an-llm).
+Different documents need different chunking strategies. A technical book requires different handling than a blog post or an email thread. The key is understanding how to split content so that each chunk remains useful and searchable for an LLM.
 
 In this exercise, you'll explore the most straightforward chunking approach: fixed-size token chunking. You'll experiment with a real TypeScript book, adjust parameters, and see how your choices affect what the AI system actually receives.
 
@@ -18,11 +18,11 @@ The book is located at `datasets/total-typescript-book.md`. It's a very long pie
 
 - [ ] Understand why we can't just pass the entire book into the context window
 
-Passing the entire book would be extremely wasteful of [tokens](/PLACEHOLDER/understanding-tokens). It would provide the [LLM](/PLACEHOLDER/what-is-an-llm) with irrelevant information, likely confusing the model and causing hallucinations.
+Passing the entire book would be extremely wasteful of [tokens](https://www.aihero.dev/what-are-tokens). It would provide the LLM with irrelevant information, likely confusing the model and causing hallucinations.
 
 - [ ] Navigate to `api/chunks.ts` and examine the chunking implementation
 
-We're using the [TokenTextSplitter](/PLACEHOLDER/langchain-token-text-splitter) from [LangChain](/PLACEHOLDER/langchain):
+We're using the [TokenTextSplitter](https://docs.langchain.com/oss/python/integrations/splitters) from LangChain:
 
 ```ts
 import { TokenTextSplitter } from '@langchain/textsplitters';
@@ -39,7 +39,7 @@ The `chunkSize` parameter controls how many tokens each chunk contains. The `chu
 
 You should see 586 chunks created with an average character length of 1,700 characters. These are relatively long chunks.
 
-- [ ] Review the [LangChain Text Splitters documentation](/PLACEHOLDER/langchain-text-splitters) to understand how `TokenTextSplitter` works
+- [ ] Review the [LangChain Text Splitters documentation](https://docs.langchain.com/oss/python/integrations/splitters) to understand how `TokenTextSplitter` works
 
 - [ ] Understand the importance of `chunkOverlap`
 

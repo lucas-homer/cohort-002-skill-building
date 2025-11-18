@@ -1,14 +1,14 @@
 Fixed-size chunks are simple, but they don't respect a document's structure. They can split important content apart and miss natural boundaries like headings and sections.
 
-A smarter approach is to use **structural chunking** — splitting documents at meaningful delimiters like headings, chapter markers, and code blocks. This keeps related information together and makes chunks more searchable and useful for [retrieval systems](/PLACEHOLDER/retrieval-augmented-generation).
+A smarter approach is to use **structural chunking** — splitting documents at meaningful delimiters like headings, chapter markers, and code blocks. This keeps related information together and makes chunks more searchable and useful for retrieval systems.
 
-LangChain's [`RecursiveCharacterTextSplitter`](/PLACEHOLDER/langchain-recursive-character-text-splitter) makes this possible by letting you define separators where splits are allowed, and it tries them in order until it finds the right breaking point.
+LangChain's [`RecursiveCharacterTextSplitter`](https://docs.langchain.com/oss/python/integrations/splitters) makes this possible by letting you define separators where splits are allowed, and it tries them in order until it finds the right breaking point.
 
 ## Steps To Complete
 
 ### Understanding Structural Chunking
 
-- [ ] Review the [`RecursiveCharacterTextSplitter`](/PLACEHOLDER/langchain-recursive-character-text-splitter) from [LangChain](/PLACEHOLDER/langchain)
+- [ ] Review the `RecursiveCharacterTextSplitter` from LangChain
 
 The splitter has several key properties:
 

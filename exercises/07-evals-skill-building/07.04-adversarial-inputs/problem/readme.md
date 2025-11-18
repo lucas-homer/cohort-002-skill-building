@@ -27,7 +27,7 @@ Here's a table of the types of adversarial inputs you should add:
 
 For many adversarial cases, the agent should recognize that calling a tool would be wrong and respond conversationally instead. In your test data, use `expected: { tool: null }` to indicate this.
 
-The [evaluation runner](/PLACEHOLDER/evalite) will check that `output.toolCalls.length` equals `0` when `expectedTool` is `null`.
+The evaluation runner will check that `output.toolCalls.length` equals `0` when `expectedTool` is `null`.
 
 ### Adding Adversarial Test Cases
 
@@ -69,7 +69,7 @@ Consider whether the agent should call the first relevant tool, ask for clarific
 
 ### Testing With Different Models
 
-- [ ] Run the evaluation using [Evalite](/PLACEHOLDER/evalite)
+- [ ] Run the evaluation using [Evalite](https://www.evalite.dev/)
 
 ```bash
 pnpm run dev
@@ -79,7 +79,7 @@ This starts the evaluation runner in watch mode, which re-runs tests when you ma
 
 - [ ] Test with multiple models to see how they handle adversarial inputs
 
-The evaluation is already configured to test both [Gemini 2.0 Flash](/PLACEHOLDER/gemini-2.0-flash) and [GPT-4 Mini](/PLACEHOLDER/gpt-4-mini). You should see results for both models.
+The evaluation is already configured to test both Gemini 2.0 Flash and GPT-4 Mini. You should see results for both models.
 
 - [ ] Compare the results between models
 

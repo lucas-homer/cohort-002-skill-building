@@ -40,7 +40,7 @@ onToolDecision: (
 
 - [ ] Trace through the logic in `root.tsx` where `onToolDecision` is implemented
 
-When the user approves, the decision is sent immediately using [`sendMessage()`](/PLACEHOLDER/send-message). When they reject, the UI changes to request feedback.
+When the user approves, the decision is sent immediately using [sendMessage()](https://ai-sdk.dev/docs/reference/ai-sdk-ui/use-chat#send-message). When they reject, the UI changes to request feedback.
 
 - [ ] Understand how `setToolGivingFeedbackOn` state works
 
@@ -50,7 +50,7 @@ This state tracks which tool is currently receiving feedback. It's used to chang
 
 - [ ] Find the `toolIdsWithDecisionsMade` calculation in `root.tsx`
 
-This is a [`useMemo`](/PLACEHOLDER/use-memo) hook that collects all `toolId` values from `data-approval-decision` message parts in the message history:
+This is a useMemo hook that collects all `toolId` values from `data-approval-decision` message parts in the message history:
 
 ```ts
 const toolIdsWithDecisionsMade = useMemo(() => {

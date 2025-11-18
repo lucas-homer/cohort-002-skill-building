@@ -44,7 +44,7 @@ if ('status' in hitlResult) {
 
 - [ ] Extract all tool requests from the most recent assistant message
 
-Map over the [`parts`](/PLACEHOLDER/message-parts) of the assistant message and filter for `data-approval-request` types. Extract the `tool` data from each part.
+Map over the [parts](https://ai-sdk.dev/docs/reference/ai-sdk-core/ui-message#uimessagepart-types) of the assistant message and filter for `data-approval-request` types. Extract the `tool` data from each part.
 
 ```ts
 // TODO: Get all the tools requiring approval from the assistant message
@@ -58,7 +58,7 @@ Store these in a `tools` array that you'll use later.
 
 - [ ] Extract all decisions from the most recent user message
 
-Map over the [`parts`](/PLACEHOLDER/message-parts) of the user message and filter for `data-approval-decision` types. Create a [`Map`](/PLACEHOLDER/javascript-map) where the key is the `toolId` and the value is the user's decision.
+Map over the parts of the user message and filter for `data-approval-decision` types. Create a Map where the key is the `toolId` and the value is the user's decision.
 
 ```ts
 // TODO: Get all the decisions that the user has made

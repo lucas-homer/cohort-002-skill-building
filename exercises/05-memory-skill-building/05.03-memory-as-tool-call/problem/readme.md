@@ -1,6 +1,6 @@
-Our previous memory setup was a little wasteful. Every time the conversation finished streaming, we'd automatically extract memories by calling [`generateObject()`](/PLACEHOLDER/ai-sdk-generate-object). This meant the LLM couldn't decide when memories actually needed updating.
+Our previous memory setup was a little wasteful. Every time the conversation finished streaming, we'd automatically extract memories by calling [generateObject()](https://ai-sdk.dev/docs/reference/ai-sdk-core/generate-object). This meant the LLM couldn't decide when memories actually needed updating.
 
-What if we let the LLM decide for itself? We can use a [tool calling](/PLACEHOLDER/ai-sdk-tool-calling) loop to give the model control over when to update memories. When users share personal information, contradict previous details, or ask to remember something, the model can call a `manageMemories` tool.
+What if we let the LLM decide for itself? We can use a [tool calling](https://ai-sdk.dev/docs/ai-sdk-core/tools-and-tool-calling) loop to give the model control over when to update memories. When users share personal information, contradict previous details, or ask to remember something, the model can call a `manageMemories` tool.
 
 This is more efficient and gives the agent better judgment about what's actually worth remembering.
 
@@ -8,13 +8,13 @@ This is more efficient and gives the agent better judgment about what's actually
 
 ### Setting Up The Memory Management Tool
 
-- [ ] Open `api/chat.ts` and locate the `tools` object in the [`streamText`](/PLACEHOLDER/ai-sdk-stream-text) call
+- [ ] Open `api/chat.ts` and locate the `tools` object in the [streamText](https://ai-sdk.dev/docs/reference/ai-sdk-core/stream-text) call
 
 You'll see a TODO comment where the `manageMemories` tool should be defined. This tool needs to handle three operations: updates, deletions, and additions.
 
-- [ ] Create the `manageMemories` tool using the [`tool()`](/PLACEHOLDER/ai-sdk-tool-function) function
+- [ ] Create the `manageMemories` tool using the [tool()](https://ai-sdk.dev/docs/ai-sdk-core/tools-and-tool-calling) function
 
-When you use [`tool()`](/PLACEHOLDER/ai-sdk-tool-function), you'll define a schema with three parameters:
+When you use tool(), you'll define a schema with three parameters:
 
 | Parameter   | Type             | Purpose                                                        |
 | ----------- | ---------------- | -------------------------------------------------------------- |
@@ -45,9 +45,9 @@ tools: {
 In your implementation:
 
 1. Filter out deletions that are being updated (to avoid conflicts)
-2. Call [`updateMemory()`](/PLACEHOLDER/update-memory) for each update
-3. Call [`deleteMemory()`](/PLACEHOLDER/delete-memory) for each deletion
-4. Call [`saveMemories()`](/PLACEHOLDER/save-memories) for each addition, creating memory objects with `id`, `memory`, and `createdAt` fields
+2. Call `updateMemory()` for each update
+3. Call `deleteMemory()` for each deletion
+4. Call `saveMemories()` for each addition, creating memory objects with `id`, `memory`, and `createdAt` fields
 
 ```ts
 execute: async ({ updates, deletions, additions }) => {
@@ -61,9 +61,9 @@ execute: async ({ updates, deletions, additions }) => {
 
 ### Enabling Tool Calling With stopWhen
 
-- [ ] Locate the TODO comment for [`stopWhen`](/PLACEHOLDER/ai-sdk-stop-when) in the [`streamText`](/PLACEHOLDER/ai-sdk-stream-text) call
+- [ ] Locate the TODO comment for [stopWhen](https://ai-sdk.dev/docs/agents/loop-control) in the streamText call
 
-This property controls when the model stops generating and how many [tool calls](/PLACEHOLDER/ai-sdk-tool-calling) it can make.
+This property controls when the model stops generating and how many tool calls it can make.
 
 - [ ] Add a stop condition using `stepCountIs(5)`
 
@@ -75,7 +75,7 @@ stopWhen: stepCountIs(5),
 
 ### Improving The System Prompt
 
-- [ ] Review the system prompt in the [`streamText`](/PLACEHOLDER/ai-sdk-stream-text) call
+- [ ] Review the system prompt in the streamText call
 
 Currently it loads memories but doesn't guide the model on when to use the tool. You need to enhance it with guidance for tool usage.
 
