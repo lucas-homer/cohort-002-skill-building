@@ -1,22 +1,32 @@
-When you're retrieving search results, you face a tricky balance. Take too many chunks and you'll load your LLM with irrelevant information. Take too few and you might miss the answer entirely.
+Retrieving search results is a balancing act. Take too many chunks and you'll load your LLM with irrelevant information. Take too few and you might miss the answer entirely.
 
-Reranking solves this problem by using an LLM to filter results. You pass a larger set of search results (like 30 chunks) to a reranking model, which evaluates them against your query and returns only the truly relevant ones.
+[Reranking](/PLACEHOLDER/reranking-concept) solves this problem by using an LLM to filter results. You pass a larger set of search results (like 30 chunks) to a reranking model, which evaluates them against your query and returns only the truly relevant ones.
 
-This two-step process (retrieve broadly, then filter intelligently) gives you the best of both worlds: comprehensive coverage without the noise.
+This two-step process gives you the best of both worlds: comprehensive coverage without the noise.
 
 ## Steps To Complete
 
 ### Understanding Reranking
 
 - [ ] Understand that reranking improves search results by filtering out irrelevant chunks
-  - Reranking takes a larger set of search results (e.g., 30 chunks)
-  - An LLM evaluates which ones are truly relevant to the user's query
-  - Only the most relevant chunks are returned to the user
+
+The reranking process works in stages:
+
+1. Retrieve a larger set of results (e.g., 30 chunks)
+2. An LLM evaluates which ones are truly relevant to the user's `searchQuery`
+3. Only the most relevant chunks are returned to the user
 
 - [ ] Review how the search algorithm currently works in `api/search.ts`
-  - BM25 provides keyword-based matching scores
-  - Embeddings provide semantic similarity scores
-  - Reciprocal Rank Fusion (RRF) combines both scores into a single ranking
+
+The current search process combines multiple ranking methods:
+
+| Method                       | Purpose                                    |
+| ---------------------------- | ------------------------------------------ |
+| BM25                         | Keyword-based matching scores              |
+| Embeddings                   | Semantic similarity scores                 |
+| Reciprocal Rank Fusion (RRF) | Combines both scores into a single ranking |
+
+Learn more about [BM25 ranking](/PLACEHOLDER/bm25-ranking), [embeddings](/PLACEHOLDER/embeddings), and [reciprocal rank fusion](/PLACEHOLDER/rrf).
 
 ### Implementing Reranking
 
@@ -33,7 +43,7 @@ This two-step process (retrieve broadly, then filter intelligently) gives you th
 const rerankedResults = TODO;
 ```
 
-- [ ] Create a Zod schema that expects an array of numbers (chunk IDs)
+- [ ] Create a [Zod schema](/PLACEHOLDER/zod-schema-describe) that expects an array of numbers (chunk IDs)
 
 ```ts
 const schema = z.object({
@@ -43,11 +53,15 @@ const schema = z.object({
 });
 ```
 
-- [ ] Call `generateObject` with the appropriate parameters
-  - Use `google('gemini-2.5-flash-lite')` as the model
-  - Set a `system` prompt explaining the reranker's role and instructing it to be selective
-  - Pass the `schema` you created
-  - In the `prompt`, include the `searchQuery` and formatted `chunksWithId`
+- [ ] Call [`generateObject()`](/PLACEHOLDER/generate-object) with the appropriate parameters
+
+Pass the following to [`generateObject()`](/PLACEHOLDER/generate-object):
+
+- Use [`google('gemini-2.5-flash-lite')`](/PLACEHOLDER/google-models) as the model
+- Set a `system` prompt explaining the reranker's role
+- Instruct it to be selective and exclude tangentially related chunks
+- Pass the `schema` you created
+- In the `prompt`, include the `searchQuery` and formatted `chunksWithId`
 
 ```ts
 const rerankedResults = await generateObject({
@@ -58,7 +72,7 @@ const rerankedResults = await generateObject({
 });
 ```
 
-- [ ] Access the reranker's results using `rerankedResults.object.resultIds`
+- [ ] Access the reranker's results using the [`object`](/PLACEHOLDER/generate-object-result) property
 
 ```ts
 const approvedChunkIds: number[] =
@@ -70,13 +84,25 @@ const approvedChunkIds: number[] =
 - [ ] Run the application using `pnpm run dev`
 
 - [ ] Run a test search query like "How did TypeScript start?"
-  - Check that chunks appear with different rerank statuses:
-    - "Approved" - chunks selected by the reranker (green)
-    - "Rejected" - chunks not selected (red)
-    - "Not Passed" - chunks not sent to reranker (gray)
+
+You should see chunks with different rerank statuses:
+
+| Status     | Meaning                  | Color |
+| ---------- | ------------------------ | ----- |
+| Approved   | Selected by the reranker | Green |
+| Rejected   | Not selected by reranker | Red   |
+| Not Passed | Not sent to reranker     | Gray  |
 
 - [ ] Experiment with different rerank counts using the UI input
-  - Try values like 10, 20, 30, 50
-  - Observe how approved chunks appear at the top of results
+
+Try values like `10`, `20`, `30`, and `50`. Observe how approved chunks appear at the top of results as the rerank count changes.
 
 - [ ] Try different search queries to verify the reranker filters appropriately
+
+Test with queries like:
+
+- "What is the history of React?"
+- "How do I use hooks?"
+- "Explain async/await"
+
+Confirm that the reranker correctly identifies relevant chunks and excludes tangentially related ones.

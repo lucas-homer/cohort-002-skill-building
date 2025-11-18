@@ -1,31 +1,43 @@
-So far, we have been making a rather dangerous assumption about the data that we are pulling into our retrieval system. We have been assuming that all of the documents that we've been receiving, whether that's emails or notes, are going to be of a relatively regular size.
+So far, we've been making a dangerous assumption about the data flowing into our [retrieval system](/PLACEHOLDER/retrieval-system). We've assumed that all documents—whether emails, notes, or reports—would be roughly the same size.
 
-In other words, most emails you get are going to be just like a few paragraphs or less. But in the real world, that doesn't happen.
+In reality, that's not how it works. Some documents are just a few paragraphs, but others are the size of novels. When you pull a large document through a [retrieval algorithm](/PLACEHOLDER/retrieval-algorithms), it dominates the [context window](/PLACEHOLDER/context-window).
 
-## Real-World Document Sizes
+Even if relevant information exists in there, you're giving the [LLM](/PLACEHOLDER/large-language-models) a needle-in-a-haystack problem. We need a strategy to handle these large documents. That strategy is **chunking**.
 
-Some documents, of course, are really, really short, but some are the size of novels. If you have a huge survey report delivered to you via email, how are you going to make that searchable?
+## Steps To Complete
 
-Because a large document like that, if you pull it in through a retrieval algorithm, it's going to dominate the context window. And even if there is relevant information in there, you're giving the LLM a really hard job because it becomes a needle in a haystack problem.
+- [ ] Review how chunking solves the context window problem
 
-Whenever we're working with an LLM, you want to give it really focused context. And so we need to find a way to handle these large documents which are going to be such a problem for our current system.
+Understand that large documents can overwhelm [LLMs](/PLACEHOLDER/large-language-models) by filling the [context window](/PLACEHOLDER/context-window) with irrelevant information.
 
-So we need to talk about chunking.
+Different chunking strategies exist for different situations:
 
-## The Problem: Long Documents
+- **Fixed-size chunking**: Split at regular intervals (e.g., 1000 characters)
+- **Semantic chunking**: Split by meaning and topic boundaries
+- **Hierarchical chunking**: Multi-level splits for nested structure
+- **Overlap-based chunking**: Chunks that share content for context
 
-![Long Documents](./long-documents.png)
+- [ ] Explore different chunking strategies
 
-Long documents with lots of unrelated text are hard to embed. If you have some key information in a long document, it's going to get crowded out by all the other unrelated information.
+Research how each approach works and when to use them. Consider how fixed-size chunking might split sentences awkwardly, while [semantic chunking](/PLACEHOLDER/semantic-chunking) respects topic boundaries.
 
-## The Solution: Break Documents Into Chunks
+- [ ] Implement chunking in your retrieval system
 
-![Chunking](./chunking.png)
+Apply chunking to your document pipeline so large documents are split before [embedding](/PLACEHOLDER/embeddings).
 
-Taking that document and splitting it into chunks will be really beneficial. Each of these smaller chunks of the document can then be treated and searched for independently.
+```ts
+// TODO: Implement the chunking logic
+// This should take a large document and split it into chunks
+// before they get embedded
+const chunks = chunkDocument(largeDocument, strategy);
+```
 
-And instead of making one big embedding for the entire document, we can take parts of the document and create individual embeddings for them.
+- [ ] Test your chunking with a large document
 
-![Embedding](./embedding.png)
+Verify that your system can now handle documents of various sizes and successfully retrieve relevant chunks. Try with documents that range from a few paragraphs to several pages.
 
-In this section, we're going to talk a lot about chunking because it's a key skill in any retrieval-based setup.
+- [ ] Measure retrieval quality after implementing chunking
+
+Compare your results before and after chunking to confirm that relevant information is easier to find in the [context window](/PLACEHOLDER/context-window).
+
+Document what you observe about search accuracy and relevance with your new chunked system.
