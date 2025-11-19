@@ -10,6 +10,8 @@ We'll create the tool, integrate it into your agent, and then refine it with pro
 
 Let's implement a search tool that the AI agent can use to answer questions by searching through emails.
 
+Recommendation: hand-code this commit, paying particular attention to the prompting. This is new ground we've not covered in skill-building.
+
 ### Steps To Complete
 
 #### Creating the search tool file
@@ -250,6 +252,8 @@ The agent will use the search tool to find relevant emails and provide an answer
 <!-- VIDEO -->
 
 Let's improve the system prompt for your email assistant. Better structure and clear anti-hallucination guardrails will help the agent use the search tool effectively.
+
+Recommendation: hand-code this commit. More new ground.
 
 ### Steps To Complete
 

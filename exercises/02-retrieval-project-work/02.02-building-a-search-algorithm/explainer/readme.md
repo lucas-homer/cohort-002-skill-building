@@ -10,6 +10,8 @@ Over the next few exercises, you're going to transform this basic search into so
 
 Let's start by adding BM25 search to the search page.
 
+Recommendation: cherry-pick. This commit sets up the search pipeline for the project.
+
 ### Steps To Complete
 
 #### Adding the `okapibm25` package
@@ -186,6 +188,8 @@ pnpm dev
 
 Let's implement a system for generating and caching embeddings so we don't regenerate them unnecessarily.
 
+Recommendation: cherry-pick, and read the code carefully. Caching embeddings is a common pattern in AI applications, so it's worth understanding.
+
 ### Steps To Complete
 
 #### Adding embedding imports
@@ -341,6 +345,8 @@ pnpm dev
 
 Let's implement semantic search using embeddings and cosine similarity.
 
+Recommendation: code this commit by hand to make sure you've understood the concepts.
+
 ### Steps To Complete
 
 #### Updating imports in `search.ts`
@@ -355,7 +361,7 @@ import { embed, embedMany, cosineSimilarity } from 'ai';
 
 #### Creating `searchWithEmbeddings`
 
-- [ ] Add a new function to search emails using semantic similarity.
+- [ ] Add a new function to search emails using semantic similarity. It should take a query and a list of emails, and return a list of emails sorted by similarity to the query.
 
 <Spoiler>
 
@@ -432,6 +438,8 @@ pnpm dev
 <!-- VIDEO -->
 
 Let's implement Reciprocal Rank Fusion (RRF), a rank fusion algorithm that combines BM25 and embeddings results using position-based scoring.
+
+Recommendation: hand-code this commit. This commit applies RRF to the search pipeline, so it brings it all together.
 
 ### Steps To Complete
 
