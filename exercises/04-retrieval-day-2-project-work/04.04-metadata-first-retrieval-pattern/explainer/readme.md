@@ -10,6 +10,8 @@ We can apply the same pattern to our email search tool. Instead of loading compl
 
 Let's implement a metadata-first retrieval pattern where search and filter tools return only snippets, and a new `getEmails` tool fetches full content.
 
+Recommendation: hand-code this commit. This is new ground not covered in the skill-building.
+
 ### Steps To Complete
 
 #### Creating the `getEmailsTool`
@@ -446,6 +448,8 @@ The assistant should search for relevant emails, review the snippets, then selec
 <!-- VIDEO -->
 
 Let's add a boolean parameter to the `getEmailsTool` to allow the LLM to fetch entire email conversation threads instead of just individual emails. This enables better context-aware responses.
+
+Recommendation: hand-code this commit. This is a nice extra addition to the project.
 
 ### Steps To Complete
 

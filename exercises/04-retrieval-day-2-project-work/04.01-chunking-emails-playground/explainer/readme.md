@@ -10,6 +10,8 @@ By using a structure-aware approach, you can split your text intelligently - res
 
 We're going to abstract the embeddings cache into a separate module. This makes it easier to work with when we start chunking emails, since we'll have multiple embeddings per email.
 
+Recommendation: cherry-pick, and read the code carefully. This commit is mostly busywork that sets up the rest of this exercise.
+
 ### Steps To Complete
 
 #### Create the `embeddings.ts` file
@@ -227,6 +229,8 @@ for (let j = 0; j < batch.length; j++) {
 
 Let's add text splitting functionality to chunk emails into smaller pieces for better retrieval.
 
+Recommendation: cherry-pick, and read the code carefully. This is porting material over from the skill-building.
+
 ### Steps To Complete
 
 - [ ] Add `@langchain/textsplitters` to your dependencies:
@@ -311,6 +315,8 @@ export const chunkEmails = async (emails: Email[]) => {
 <!-- VIDEO -->
 
 We're now converting all search algorithms from working with whole emails to working with email chunks. This allows for more granular search results.
+
+Recommendation: cherry-pick, and read the code carefully. This refactors our existing functions to work with email chunks. Once this is done, experiment with chunking to see how it affects the search results.
 
 ### Steps To Complete
 

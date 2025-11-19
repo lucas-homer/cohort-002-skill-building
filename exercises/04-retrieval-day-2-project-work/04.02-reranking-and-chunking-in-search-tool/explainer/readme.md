@@ -11,6 +11,8 @@ These changes will make your agent more thoughtful about its decisions and easie
 We're going to add a reranker to filter search results using
 an LLM before returning them to the user.
 
+Recommendation: hand-code this commit. It's important to feel ownership over the system prompt, especially.
+
 ### Steps To Complete
 
 #### Create the `rerank.ts` file with types and function signature
@@ -189,6 +191,8 @@ pnpm dev
 
 We're going to enhance the reranker by passing it the full conversation history. This gives it much more context when deciding which email chunks are most relevant.
 
+Recommendation: hand-code this commit. Refactoring tools to be a function is a common pattern in AI SDK applications.
+
 ### Steps To Complete
 
 #### Update the search tool to be a function
@@ -361,6 +365,8 @@ tools: {
 <!-- VIDEO -->
 
 Let's display the search tool calls in the frontend with email results and search parameters.
+
+Recommendation: cherry-pick if you're not that interested in frontend code. Hand-code if you want to create a gorgeous app.
 
 ### Steps To Complete
 

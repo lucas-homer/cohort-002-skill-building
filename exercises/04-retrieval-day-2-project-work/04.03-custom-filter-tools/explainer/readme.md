@@ -10,6 +10,8 @@ Let's build this multi-tool system.
 
 Let's add a `filterEmails` tool that allows precise filtering of emails by sender, recipient, date range, and text content. This complements the semantic search tool for more exact queries.
 
+Recommendation: hand-code this commit. This is new ground not covered in the skill-building.
+
 ### Steps To Complete
 
 #### Creating the filter tool file
@@ -257,6 +259,8 @@ pnpm dev
 <!-- VIDEO -->
 
 We're adding a new tool display case for the `filterEmails` tool in the chat component, similar to the existing search tool display.
+
+Recommendation: cherry-pick if you're not that interested in frontend code. But make sure to test it heavily afterwards.
 
 ### Steps To Complete
 
