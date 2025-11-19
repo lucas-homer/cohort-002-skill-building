@@ -10,6 +10,8 @@ The way to model this is by having the assistant learn from each conversation it
 
 Let's add LLM summary storage to our chat database to enable episodic memory creation. This will capture key information about each conversation for future retrieval and learning.
 
+Recommendation: cherry-pick this commit. This is setting up the foundation for episodic memory, and is mostly database work.
+
 ### Steps To Complete
 
 #### Adding the `ChatLLMSummary` interface
@@ -105,6 +107,8 @@ export async function updateChatLLMSummary(
 <!-- VIDEO -->
 
 Let's create a function that analyzes conversations and generates summaries for episodic memory.
+
+Recommendation: hand-code this commit. This is new ground.
 
 ### Steps To Complete
 
@@ -289,6 +293,8 @@ export const chatToText = (chat: DB.Chat): string => {
 <!-- VIDEO -->
 
 Let's add a function to search for related chats by embedding the current message history and finding similar conversations.
+
+Recommendation: cherry-pick this commit, then tweak. This is similar to other embeddings-based search functions we've built.
 
 ### Steps To Complete
 

@@ -10,6 +10,8 @@ By the end of this section, you'll have implemented both semantic memory retriev
 
 Throughout this section, we'll be embedding different types of items. Making search functions generic allows them to work with any type, not just email chunks. This commit converts the search functions to accept generic types with a `toText` conversion function.
 
+Recommendation: cherry-pick if you're not that interested in generic types in TypeScript. But worth hand-coding if you are.
+
 ### Steps To Complete
 
 #### Making `searchWithBM25` generic
@@ -345,6 +347,8 @@ const transformedEmails = emailsWithScores
 
 Let's implement semantic search for memories by creating utility functions to convert messages into searchable queries and a `searchMemories` function that ranks memories by relevance.
 
+Recommendation: hand-code this commit. We saw this as an explainer in the skill-building, so try to build it by hand to make sure you've understood the concepts.
+
 ### Steps To Complete
 
 #### Creating `messagePartsToText` and `messageToText` utilities
@@ -462,6 +466,8 @@ export const searchMemories = async (opts: {
 
 We're going to integrate memories into our chat agent so it can recall relevant facts about the user during conversations.
 
+Recommendation: hand-code this commit. Figuring out how to frame the memories in the system prompt is a nice challenge.
+
 ### Steps To Complete
 
 #### Import Memory Search Functions
@@ -532,6 +538,8 @@ ${memories.map((memory) => `- ${memoryToText(memory.item)}`).join("\n")}
 <!-- VIDEO -->
 
 Let's implement memory extraction to automatically capture and update permanent information from conversations.
+
+Recommendation: cherry-pick this, then tweak the system prompt to your liking. We've covered most of this in the skill-building, but you can never have too much practice writing prompts.
 
 ### Steps To Complete
 
@@ -784,6 +792,8 @@ pnpm dev
 <!-- VIDEO -->
 
 Let's update the system prompt to position the agent as a personal assistant rather than just an email helper. This makes the agent more helpful for general tasks while still supporting email access.
+
+Recommendation: read through the system prompt updates below and see what you want to carry over to your own system prompt.
 
 ### Steps To Complete
 
