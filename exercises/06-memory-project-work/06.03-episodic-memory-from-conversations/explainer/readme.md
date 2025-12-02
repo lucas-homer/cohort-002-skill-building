@@ -358,3 +358,93 @@ pnpm dev
 - [ ] Start a second conversation about a related topic (e.g., asking "which are better - types or interfaces?"). The system will call `searchForRelatedChats` to find and include the first conversation in the context.
 
 - [ ] Verify that the LLM leverages insights from the first conversation (what worked well, what to avoid) when responding in the second conversation, demonstrating that episodic memory is improving the chat experience.
+
+## Finishing The Episodic Memory Setup
+
+<!-- VIDEO -->
+
+Let's integrate episodic memory by searching for related chats and reflecting on conversations to enhance the agent's learning.
+
+Recommendation: hand-code this commit. It pulls together all the previous work and will need to be tested thoroughly.
+
+### Steps To Complete
+
+#### Importing required dependencies
+
+- [ ] Add three new imports to `src/app/api/chat/route.ts` for searching related chats, converting chats to text, and reflecting on chat content.
+
+```typescript
+// src/app/api/chat/route.ts
+import { searchForRelatedChats } from '@/app/search-for-related-chats';
+import { chatToText } from '@/app/utils';
+import { reflectOnChat } from '@/app/reflect-on-chat';
+```
+
+#### Adding related chats to context
+
+- [ ] Inside the `POST` function, after calculating `messageHistoryForLLM`, search for related chats before calling `streamText`. This finds previous conversations relevant to the current message.
+
+<Spoiler>
+
+```typescript
+// src/app/api/chat/route.ts
+const messageHistoryForLLM = [...oldMessagesToUse, ...messages];
+
+const stream = createUIMessageStream<MyMessage>({
+  execute: async ({ writer }) => {
+    // ... existing code ...
+
+    // ADDED: Search for related chats to include in context
+    const relatedChats = await searchForRelatedChats(chatId, messages);
+
+    const result = streamText({
+      // ... existing code ...
+    });
+```
+
+</Spoiler>
+
+#### Adding related chats to the system prompt
+
+- [ ] In the system prompt, add a new `<related-chats>` section after the `</memories>` closing tag. Include the related chats formatted with XML tags to clearly delineate each chat for the LLM.
+
+<Spoiler>
+
+```txt
+// src/app/api/chat/route.ts
+</memories>
+
+// ADDED: Related chats section provides episodic memory from past conversations
+<related-chats>
+Here are some related chats that may be relevant to the conversation:
+
+${relatedChats
+  .map((chat) => ["<chat>", chatToText(chat.item), "</chat>"])
+  .join("\n")}
+</related-chats>
+
+<the-ask>
+```
+
+</Spoiler>
+
+#### Generating chat reflections
+
+- [ ] In the `onFinish` callback, add a call to `reflectOnChat` after the `extractAndUpdateMemories` call. This generates a reflection on the chat to capture key insights for future reference.
+
+<Spoiler>
+
+```typescript
+// src/app/api/chat/route.ts
+onFinish: async ({ responseMessage }) => {
+  await appendToChatMessages(chatId, [responseMessage]);
+  await extractAndUpdateMemories({
+    messages: [...messages, responseMessage],
+    memories: memories.map((memory) => memory.item),
+  });
+  // ADDED: Generate reflection on the chat for episodic memory
+  await reflectOnChat(chatId);
+},
+```
+
+</Spoiler>

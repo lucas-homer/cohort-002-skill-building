@@ -1,0 +1,168 @@
+commit 9cb96c65b5487025a7d933906cc10c5ed1c5dbd8
+Author: Matt Pocock <mattpocockvoice@gmail.com>
+Date:   Wed Nov 5 14:59:17 2025 +0000
+
+    06.03.04 Final episodic memory setup
+
+diff --git a/src/app/api/chat/route.ts b/src/app/api/chat/route.ts
+index 3c044df..6e5bb29 100644
+--- a/src/app/api/chat/route.ts
++++ b/src/app/api/chat/route.ts
+@@ -23,6 +23,9 @@ import { getEmailsTool } from "./get-emails-tool";
+ import { memoryToText, searchMemories } from "@/app/memory-search";
+ import { extractAndUpdateMemories } from "./extract-memories";
+ import { searchMessages } from "@/app/message-search";
++import { searchForRelatedChats } from "@/app/search-for-related-chats";
++import { chatToText } from "@/app/utils";
++import { reflectOnChat } from "@/app/reflect-on-chat";
+ 
+ // Allow streaming responses up to 30 seconds
+ export const maxDuration = 30;
+@@ -50,94 +53,96 @@ const getTools = (messages: UIMessage[]) => ({
+ export async function POST(req: Request) {
+   const body: {
+     message: MyMessage;
+     id: string;
+   } = await req.json();
+ 
+   const chatId = body.id;
+ 
+   let chat = await getChat(chatId);
+ 
+   const recentMessages = [...(chat?.messages ?? []), body.message].slice(
+     -MESSAGE_HISTORY_LENGTH
+   );
+ 
+   const olderMessages = chat?.messages.slice(0, -MESSAGE_HISTORY_LENGTH);
+ 
+   const validatedMessagesResult = await safeValidateUIMessages<MyMessage>({
+     messages: recentMessages,
+   });
+ 
+   if (!validatedMessagesResult.success) {
+     return new Response(validatedMessagesResult.error.message, { status: 400 });
+   }
+ 
+   const messages = validatedMessagesResult.data;
+ 
+   const mostRecentMessage = messages[messages.length - 1];
+ 
+   if (!mostRecentMessage) {
+     return new Response("No messages provided", { status: 400 });
+   }
+ 
+   if (mostRecentMessage.role !== "user") {
+     return new Response("Last message must be from the user", {
+       status: 400,
+     });
+   }
+ 
+   const allMemories = await searchMemories({ messages });
+ 
+   const memories = allMemories.slice(0, MEMORIES_TO_USE);
+ 
+   const oldMessagesToUse = await searchMessages({
+     recentMessages: messages,
+     olderMessages: olderMessages ?? [],
+   }).then((results) =>
+     results
+       .slice(0, OLD_MESSAGES_TO_USE)
+       .sort((a, b) => b.score - a.score)
+       .map((result) => result.item)
+   );
+ 
+   console.log("oldMessagesToUse", oldMessagesToUse.length);
+ 
+   const messageHistoryForLLM = [...oldMessagesToUse, ...messages];
+ 
+   const stream = createUIMessageStream<MyMessage>({
+     execute: async ({ writer }) => {
+       let generateTitlePromise: Promise<void> | undefined = undefined;
+ 
+       if (!chat) {
+         const newChat = await createChat({
+           id: chatId,
+           title: "Generating title...",
+           initialMessages: messages,
+         });
+         chat = newChat;
+ 
+         writer.write({
+           type: "data-frontend-action",
+           data: "refresh-sidebar",
+           transient: true,
+         });
+ 
+         generateTitlePromise = generateTitleForChat(messages)
+           .then((title) => {
+             return updateChatTitle(chatId, title);
+           })
+           .then(() => {
+             writer.write({
+               type: "data-frontend-action",
+               data: "refresh-sidebar",
+               transient: true,
+             });
+           });
+       } else {
+         await appendToChatMessages(chatId, [mostRecentMessage]);
+       }
+ 
++      const relatedChats = await searchForRelatedChats(chatId, messages);
++
+       const result = streamText({
+         model: google("gemini-2.5-flash"),
+         messages: convertToModelMessages(messageHistoryForLLM),
+         system: `
+ <task-context>
+@@ -188,41 +193,50 @@ Here are some memories that may be relevant to the conversation:
+ ${memories
+   .map((memory) => [
+     `<memory id="${memory.item.id}">`,
+     memoryToText(memory.item),
+     "</memory>",
+   ])
+   .join("\n")}
+ </memories>
+ 
++<related-chats>
++Here are some related chats that may be relevant to the conversation:
++
++${relatedChats
++  .map((chat) => ["<chat>", chatToText(chat.item), "</chat>"])
++  .join("\n")}
++</related-chats>
++
+ <the-ask>
+ Here is the user's request. For general questions and conversations, respond naturally. For email-related queries, use the tools and multi-step workflow above.
+ </the-ask>
+         `,
+         tools: getTools(messages),
+         stopWhen: [stepCountIs(10)],
+       });
+ 
+       writer.merge(
+         result.toUIMessageStream({
+           sendSources: true,
+           sendReasoning: true,
+         })
+       );
+ 
+       await generateTitlePromise;
+     },
+     generateId: () => crypto.randomUUID(),
+     onFinish: async ({ responseMessage }) => {
+       await appendToChatMessages(chatId, [responseMessage]);
+       await extractAndUpdateMemories({
+         messages: [...messages, responseMessage],
+         memories: memories.map((memory) => memory.item),
+       });
++      await reflectOnChat(chatId);
+     },
+   });
+ 
+   // send sources and reasoning back to the client
+   return createUIMessageStreamResponse({
+     stream,
+   });
+ }
