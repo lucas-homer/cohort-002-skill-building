@@ -10,6 +10,8 @@ The solution is **working memory** - a sliding window approach where you send th
 
 The default behavior of the AI SDK is to send the entire message history to the API. For production applications, it's more efficient to send only the most recent message since we're persisting the full history anyway.
 
+Recommendation: hand-code this commit. It's new material not covered in the skill building.
+
 ### Steps To Complete
 
 #### Update the Chat Component Transport
@@ -113,6 +115,8 @@ export async function POST(req: Request) {
 
 Let's implement the `searchMessages` function that uses our generic embedding search to find older messages based on recent message context.
 
+Recommendation: hand-code this commit. It won't take you long - it's a single function that reuses existing code.
+
 ### Steps To Complete
 
 #### Creating the `searchMessages` function
@@ -160,6 +164,8 @@ The function leverages our existing generic `searchWithEmbeddings` utility and `
 <!-- VIDEO -->
 
 Let's implement working memory by using semantic search on older messages combined with recent message history.
+
+Recommendation: hand-code this commit. It's new ground not covered in the skill building.
 
 ### Steps To Complete
 
