@@ -1,11 +1,14 @@
-import { google } from '@ai-sdk/google';
+import { google } from "@ai-sdk/google";
 import {
-  convertToModelMessages,
-  createUIMessageStream,
-  createUIMessageStreamResponse,
-  streamText,
-  type UIMessage,
-} from 'ai';
+	convertToModelMessages,
+	createUIMessageStream,
+	createUIMessageStreamResponse,
+	generateObject,
+	streamText,
+	type UIMessage,
+} from "ai";
+import z from "zod";
+import { searchEmails } from "./bm25.ts";
 
 const KEYWORD_GENERATOR_SYSTEM_PROMPT = `
   You are a helpful email assistant, able to search through emails for information.
@@ -13,63 +16,69 @@ const KEYWORD_GENERATOR_SYSTEM_PROMPT = `
 `;
 
 export const POST = async (req: Request): Promise<Response> => {
-  const body: { messages: UIMessage[] } = await req.json();
-  const { messages } = body;
+	const body: { messages: UIMessage[] } = await req.json();
+	const { messages } = body;
 
-  const stream = createUIMessageStream({
-    execute: async ({ writer }) => {
-      // TODO: Implement a keyword generator that generates a list of keywords
-      // based on the conversation history. Use generateObject to do this.
-      const keywords = TODO;
+	const stream = createUIMessageStream({
+		execute: async ({ writer }) => {
+			// TODO: Implement a keyword generator that generates a list of keywords
+			// based on the conversation history. Use generateObject to do this.
+			const keywords = await generateObject({
+				model: google("gemini-2.5-flash"),
+				system: KEYWORD_GENERATOR_SYSTEM_PROMPT,
+				messages: convertToModelMessages(messages),
+				schema: z.array(z.string()),
+			});
 
-      // TODO: Use the searchEmails function to get the top X number of
-      // search results based on the keywords
-      const topSearchResults = TODO;
+			const keywordList = keywords.object;
 
-      const emailSnippets = [
-        '## Email Snippets',
-        ...topSearchResults.map((result, i) => {
-          const from = result.email?.from || 'unknown';
-          const to = result.email?.to || 'unknown';
-          const subject =
-            result.email?.subject || `email-${i + 1}`;
-          const body = result.email?.body || '';
-          const score = result.score;
+			// TODO: Use the searchEmails function to get the top X number of
+			// search results based on the keywords
+			const topSearchResults = await searchEmails(keywordList);
 
-          return [
-            `### 📧 Email ${i + 1}: [${subject}](#${subject.replace(/[^a-zA-Z0-9]/g, '-')})`,
-            `**From:** ${from}`,
-            `**To:** ${to}`,
-            `**Relevance Score:** ${score.toFixed(3)}`,
-            body,
-            '---',
-          ].join('\n\n');
-        }),
-        '## Instructions',
-        "Based on the emails above, please answer the user's question. Always cite your sources using the email subject in markdown format.",
-      ].join('\n\n');
+			const emailSnippets = [
+				"## Email Snippets",
+				...topSearchResults.map((result, i) => {
+					const from = result.email?.from || "unknown";
+					const to = result.email?.to || "unknown";
+					const subject = result.email?.subject || `email-${i + 1}`;
+					const body = result.email?.body || "";
+					const score = result.score;
 
-      const answer = streamText({
-        model: google('gemini-2.5-flash'),
-        system: `You are a helpful email assistant that answers questions based on email content.
+					return [
+						`### 📧 Email ${i + 1}: [${subject}](#${subject.replace(/[^a-zA-Z0-9]/g, "-")})`,
+						`**From:** ${from}`,
+						`**To:** ${to}`,
+						`**Relevance Score:** ${score.toFixed(3)}`,
+						body,
+						"---",
+					].join("\n\n");
+				}),
+				"## Instructions",
+				"Based on the emails above, please answer the user's question. Always cite your sources using the email subject in markdown format.",
+			].join("\n\n");
+
+			const answer = streamText({
+				model: google("gemini-2.5-flash"),
+				system: `You are a helpful email assistant that answers questions based on email content.
           You should use the provided emails to answer questions accurately.
           ALWAYS cite sources using markdown formatting with the email subject as the source.
           Be concise but thorough in your explanations.
         `,
-        messages: [
-          ...convertToModelMessages(messages),
-          {
-            role: 'user',
-            content: emailSnippets,
-          },
-        ],
-      });
+				messages: [
+					...convertToModelMessages(messages),
+					{
+						role: "user",
+						content: emailSnippets,
+					},
+				],
+			});
 
-      writer.merge(answer.toUIMessageStream());
-    },
-  });
+			writer.merge(answer.toUIMessageStream());
+		},
+	});
 
-  return createUIMessageStreamResponse({
-    stream,
-  });
+	return createUIMessageStreamResponse({
+		stream,
+	});
 };
