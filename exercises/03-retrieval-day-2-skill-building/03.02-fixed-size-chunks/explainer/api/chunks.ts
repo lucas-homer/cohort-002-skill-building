@@ -1,75 +1,68 @@
 import {
-  CharacterTextSplitter,
-  TokenTextSplitter,
-} from '@langchain/textsplitters';
-import { readFileSync } from 'fs';
-import path from 'path';
+	CharacterTextSplitter,
+	TokenTextSplitter,
+} from "@langchain/textsplitters";
+import { readFileSync } from "fs";
+import path from "path";
 
 const splitter = new TokenTextSplitter({
-  chunkSize: 500,
-  chunkOverlap: 200,
+	chunkSize: 700,
+	chunkOverlap: 200,
 });
 
 const bookText = readFileSync(
-  path.join(
-    import.meta.dirname,
-    '../../../../../datasets/total-typescript-book.md',
-  ),
-  'utf-8',
+	path.join(
+		import.meta.dirname,
+		"../../../../../datasets/total-typescript-book.md",
+	),
+	"utf-8",
 );
 
 export const GET = async (req: Request): Promise<Response> => {
-  const url = new URL(req.url);
-  const search = url.searchParams.get('search') || '';
-  const page = parseInt(url.searchParams.get('page') || '1', 10);
-  const pageSize = parseInt(
-    url.searchParams.get('pageSize') || '20',
-    10,
-  );
+	const url = new URL(req.url);
+	const search = url.searchParams.get("search") || "";
+	const page = parseInt(url.searchParams.get("page") || "1", 10);
+	const pageSize = parseInt(url.searchParams.get("pageSize") || "20", 10);
 
-  // Split text into chunks
-  const allChunks = await splitter.splitText(bookText);
+	// Split text into chunks
+	const allChunks = await splitter.splitText(bookText);
 
-  // Filter chunks based on search query
-  const filteredChunks = search
-    ? allChunks.filter((chunk) =>
-        chunk.toLowerCase().includes(search.toLowerCase()),
-      )
-    : allChunks;
+	// Filter chunks based on search query
+	const filteredChunks = search
+		? allChunks.filter((chunk) =>
+				chunk.toLowerCase().includes(search.toLowerCase()),
+			)
+		: allChunks;
 
-  // Calculate stats
-  const totalChunks = filteredChunks.length;
-  const avgChars =
-    totalChunks > 0
-      ? Math.round(
-          filteredChunks.reduce(
-            (sum, chunk) => sum + chunk.length,
-            0,
-          ) / totalChunks,
-        )
-      : 0;
-  const pageCount = Math.ceil(totalChunks / pageSize);
+	// Calculate stats
+	const totalChunks = filteredChunks.length;
+	const avgChars =
+		totalChunks > 0
+			? Math.round(
+					filteredChunks.reduce((sum, chunk) => sum + chunk.length, 0) /
+						totalChunks,
+				)
+			: 0;
+	const pageCount = Math.ceil(totalChunks / pageSize);
 
-  // Paginate
-  const startIdx = (page - 1) * pageSize;
-  const endIdx = startIdx + pageSize;
-  const paginatedChunks = filteredChunks.slice(startIdx, endIdx);
+	// Paginate
+	const startIdx = (page - 1) * pageSize;
+	const endIdx = startIdx + pageSize;
+	const paginatedChunks = filteredChunks.slice(startIdx, endIdx);
 
-  // Return chunks with their original indices
-  const chunksWithIndices = paginatedChunks.map(
-    (chunk, localIdx) => ({
-      index: startIdx + localIdx,
-      content: chunk,
-    }),
-  );
+	// Return chunks with their original indices
+	const chunksWithIndices = paginatedChunks.map((chunk, localIdx) => ({
+		index: startIdx + localIdx,
+		content: chunk,
+	}));
 
-  return Response.json({
-    chunks: chunksWithIndices,
-    stats: {
-      total: totalChunks,
-      avgChars,
-      pageCount,
-      currentPage: page,
-    },
-  });
+	return Response.json({
+		chunks: chunksWithIndices,
+		stats: {
+			total: totalChunks,
+			avgChars,
+			pageCount,
+			currentPage: page,
+		},
+	});
 };
