@@ -1,46 +1,46 @@
-import { google } from '@ai-sdk/google';
+import { google } from "@ai-sdk/google";
 import {
-  convertToModelMessages,
-  createUIMessageStream,
-  createUIMessageStreamResponse,
-  generateId,
-  generateObject,
-  streamText,
-  type UIMessage,
-} from 'ai';
-import { z } from 'zod';
+	convertToModelMessages,
+	createUIMessageStream,
+	createUIMessageStreamResponse,
+	generateId,
+	generateObject,
+	streamText,
+	type UIMessage,
+} from "ai";
+import { z } from "zod";
 import {
-  loadMemories,
-  saveMemories,
-  deleteMemory,
-  updateMemory,
-  type DB,
-} from './memory-persistence.ts';
+	type DB,
+	deleteMemory,
+	loadMemories,
+	saveMemories,
+	updateMemory,
+} from "./memory-persistence.ts";
 
 export type MyMessage = UIMessage<unknown, {}>;
 
 const formatMemory = (memory: DB.MemoryItem) => {
-  return [
-    `Memory: ${memory.memory}`,
-    `ID: ${memory.id}`,
-    `Created At: ${memory.createdAt}`,
-  ].join('\n');
+	return [
+		`Memory: ${memory.memory}`,
+		`ID: ${memory.id}`,
+		`Created At: ${memory.createdAt}`,
+	].join("\n");
 };
 
 export const POST = async (req: Request): Promise<Response> => {
-  const body: { messages: MyMessage[] } = await req.json();
-  const { messages } = body;
+	const body: { messages: MyMessage[] } = await req.json();
+	const { messages } = body;
 
-  const memories = await loadMemories();
+	const memories = await loadMemories();
 
-  const memoriesText = memories.map(formatMemory).join('\n\n');
-  const stream = createUIMessageStream<MyMessage>({
-    execute: async ({ writer }) => {
-      const result = streamText({
-        model: google('gemini-2.5-flash-lite'),
-        system: `You are a helpful assistant that can answer questions and help with tasks.
+	const memoriesText = memories.map(formatMemory).join("\n\n");
+	const stream = createUIMessageStream<MyMessage>({
+		execute: async ({ writer }) => {
+			const result = streamText({
+				model: google("gemini-2.5-flash-lite"),
+				system: `You are a helpful assistant that can answer questions and help with tasks.
 
-        The date is ${new Date().toISOString().split('T')[0]}.
+        The date is ${new Date().toISOString().split("T")[0]}.
 
         You have access to the following memories:
 
@@ -48,33 +48,40 @@ export const POST = async (req: Request): Promise<Response> => {
         ${memoriesText}
         </memories>
         `,
-        messages: convertToModelMessages(messages),
-      });
+				messages: convertToModelMessages(messages),
+			});
 
-      writer.merge(result.toUIMessageStream());
-    },
-    onFinish: async (response) => {
-      const allMessages = [...messages, ...response.messages];
+			writer.merge(result.toUIMessageStream());
+		},
+		onFinish: async (response) => {
+			const allMessages = [...messages, ...response.messages];
 
-      const memoriesResult = await generateObject({
-        model: google('gemini-2.5-flash'),
-        schema: z.object({
-          // TODO: Define the schema for the updates. Updates should
-          // be an array of objects with the following fields:
-          // - id: The ID of the existing memory to update
-          // - memory: The updated memory content
-          updates: TODO,
-          // TODO: Define the schema for the deletions. Deletions should
-          // be an array of strings, each representing the ID of a memory
-          // to delete
-          deletions: TODO,
-          // TODO: Define the schema for the additions. Additions should
-          // be an array of strings, each representing a new memory to add
-          additions: TODO,
-        }),
-        // TODO: Update the system prompt to tell it to return updates,
-        // deletions and additions
-        system: `You are a memory extraction agent. Your task is to analyze the conversation history and extract permanent memories about the user.
+			const memoriesResult = await generateObject({
+				model: google("gemini-2.5-flash"),
+				schema: z.object({
+					// TODO: Define the schema for the updates. Updates should
+					// be an array of objects with the following fields:
+					// - id: The ID of the existing memory to update
+					// - memory: The updated memory content
+					updates: z.array(
+						z.object({
+							id: z
+								.string()
+								.describe("The ID of the existing memory to update"),
+							memory: z.string().describe("The updated memory content"),
+						}),
+					),
+					// TODO: Define the schema for the deletions. Deletions should
+					// be an array of strings, each representing the ID of a memory
+					// to delete
+					deletions: z.array(
+						z.string().describe("the ID of a memory to delete"),
+					),
+					// TODO: Define the schema for the additions. Additions should
+					// be an array of strings, each representing a new memory to add
+					additions: z.array(z.string().describe("a new memory to add")),
+				}),
+				system: `You are a memory extraction agent. Your task is to analyze the conversation history and manage permanent memories about the user.
 
         PERMANENT MEMORIES are facts about the user that:
         - Are unlikely to change over time (preferences, traits, characteristics)
@@ -95,44 +102,61 @@ export const POST = async (req: Request): Promise<Response> => {
         - "User is currently debugging code" (situational)
         - "User said hello" (trivial interaction)
 
-        Extract any new permanent memories from this conversation. Return an array of memory strings that should be added to the user's permanent memory. Each memory should be a concise, factual statement about the user.
+        Based on the conversation, you must return three things:
 
-        If no new permanent memories are found, return an empty array.
-        
+        1. UPDATES: If an existing memory needs to be modified because new information changes or refines it, include it in updates with the memory's ID and the new content.
+           - Example: If existing memory says "User lives in San Francisco" but user mentions they moved to New York, update that memory.
+
+        2. DELETIONS: If an existing memory is no longer true or relevant, include its ID in deletions.
+           - Example: If user says "I no longer have a dog", delete the memory about having a dog.
+
+        3. ADDITIONS: New permanent memories that don't already exist. Each addition should be a concise, factual statement about the user.
+           - Only add memories that are genuinely new information not covered by existing memories.
+
+        Return empty arrays for any category that has no changes.
+
         EXISTING MEMORIES:
         ${memoriesText}
         `,
-        messages: convertToModelMessages(allMessages),
-      });
+				messages: convertToModelMessages(allMessages),
+			});
 
-      const { updates, deletions, additions } =
-        memoriesResult.object;
+			const { updates, deletions, additions } = memoriesResult.object;
 
-      console.log('Updates', updates);
-      console.log('Deletions', deletions);
-      console.log('Additions', additions);
+			console.log("Updates", updates);
+			console.log("Deletions", deletions);
+			console.log("Additions", additions);
 
-      // Only delete memories that are not being updated
-      const filteredDeletions = deletions.filter(
-        (deletion) =>
-          !updates.some((update) => update.id === deletion),
-      );
+			// Only delete memories that are not being updated
+			const filteredDeletions = deletions.filter(
+				(deletion) => !updates.some((update) => update.id === deletion),
+			);
 
-      // TODO: Update the memories that need to be updated
-      // by calling updateMemory for each update
-      TODO;
+			// Update the memories that need to be updated
+			for (const update of updates) {
+				updateMemory(update.id, {
+					memory: update.memory,
+					createdAt: new Date().toISOString(),
+				});
+			}
 
-      // TODO: Delete the memories that need to be deleted
-      // by calling deleteMemory for each filtered deletion
-      TODO;
+			// Delete the memories that need to be deleted
+			for (const deletion of filteredDeletions) {
+				deleteMemory(deletion);
+			}
 
-      // TODO: Save the new memories by calling saveMemories
-      // with the new memories
-      TODO;
-    },
-  });
+			// Save the new memories
+			saveMemories(
+				additions.map((addition) => ({
+					id: generateId(),
+					memory: addition,
+					createdAt: new Date().toISOString(),
+				})),
+			);
+		},
+	});
 
-  return createUIMessageStreamResponse({
-    stream,
-  });
+	return createUIMessageStreamResponse({
+		stream,
+	});
 };
